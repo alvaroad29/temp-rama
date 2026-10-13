@@ -1,0 +1,114 @@
+<form [formGroup]="searchForm" (ngSubmit)="onSubmit()" class="space-y-4 my-4">
+  <!-- Primera fila: Búsqueda -->
+  <div class="flex flex-col gap-2 sm:flex-row">
+    <input
+      type="text"
+      formControlName="searchText"
+      placeholder="Buscar..."
+      class="input input-bordered w-full sm:flex-grow"
+    >
+
+    <select formControlName="searchIn" class="select select-bordered w-full sm:w-40">
+      @for (field of fields; track field.value) {
+        <option [value]="field.value">{{ field.label }}</option>
+      }
+    </select>
+  </div>
+
+  <!-- Segunda fila: Controles -->
+  <div class="flex flex-col gap-4 sm:flex-row sm:justify-between">
+
+    <!-- Estado -->
+    <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
+    <p class="text-sm font-medium">Estado:</p>
+    <select
+      formControlName="state"
+      class="select select-bordered w-full sm:w-40"
+    >
+      @for (state of stateOptions; track state.value) {
+        <option [value]="state.value">{{ state.label }}</option>
+      }
+    </select>
+    </div>
+
+    <!-- Dropdown de géneros -->
+    <div class="relative inline-block" #genreDropdownContainer>
+      <!-- Botón del dropdown -->
+      <button
+        type="button"
+        (click)="toggleDropdown()"
+        class="flex items-center gap-2 px-4 py-2 border border-base-content/30 rounded-md hover:bg-base-300 transition-all duration-200 w-full"
+      >
+        <span class="w-full text-left">Géneros</span>
+        <i-lucide [img]="arrow" class="h-3 w-3 transition-transform duration-200"
+          [class.rotate-180]="dropdownOpen()"></i-lucide>
+      </button>
+
+      <!-- Contenido del dropdown -->
+      @if (dropdownOpen()) {
+        <div
+          class="absolute mt-2 w-64 sm:w-130 md:w-150 bg-base-200 border border-base-300 rounded-md z-50 overflow-hidden"
+          (click)="$event.stopPropagation()"
+        >
+          <!-- Cargando -->
+          @if (genresResource.isLoading()) {
+            <div class="p-3 text-sm text-base-content text-center">
+              Cargando géneros...
+            </div>
+          }
+          <!-- Error -->
+          @else if (genresResource.error()) {
+            <div class="p-3 text-sm text-red-600 text-center">
+              Error cargando géneros
+            </div>
+          }
+          <!-- Éxito: lista de géneros -->
+          @else {
+            <div class="p-2 max-h-60 overflow-y-auto">
+              <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-1">
+                @for (genre of genres(); track genre.id) {
+                  <label
+                    class="flex items-center gap-2 px-3 py-2 text-sm text-base-content rounded hover:bg-base-300 cursor-pointer transition-colors duration-150"
+                  >
+                    <input
+                      type="checkbox"
+                      [checked]="isGenreSelected(genre.id)"
+                      (change)="toggleGenre(genre.id)"
+                      class="w-4 h-4 text-primary border-base-300 rounded focus:ring-blue-500"
+                    />
+                    <span class="select-none">{{ genre.name }}</span>
+                  </label>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+
+
+
+
+    <!-- Ordenamiento -->
+    <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
+      <p class="text-sm font-medium">Ordenar por:</p>
+      <select formControlName="sortBy" class="select select-bordered w-full sm:w-32">
+        @for (option of sortOptions; track option.value) {
+          <option [value]="option.value">{{ option.label }}</option>
+        }
+      </select>
+
+      <select formControlName="sortDescending" class="select select-bordered w-full sm:w-36">
+        @for (option of orderOptions; track option.value) {
+          <option [value]="option.value">{{ option.label }}</option>
+        }
+      </select>
+    </div>
+
+
+    <button type="submit" class="btn btn-primary w-full sm:w-24">
+      Buscar
+    </button>
+  </div>
+</form>

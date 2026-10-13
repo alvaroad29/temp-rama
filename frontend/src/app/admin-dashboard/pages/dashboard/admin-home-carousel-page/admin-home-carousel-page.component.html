@@ -1,0 +1,83 @@
+   <div class="p-6">
+      <div class="bg-base-200 rounded-lg p-6">
+        <h1 class="text-2xl font-bold mb-6">Administrar Carousel del Home</h1>
+
+        <div class="bg-base-100 rounded-lg p-6 mb-6">
+          <h2 class="text-lg font-semibold mb-4">Lista del Carousel</h2>
+
+          @if (carouselResource.isLoading()) {
+            <div class="flex justify-center py-8">
+              <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            </div>
+          } @else if (carouselResource.error()) {
+            <div class="alert alert-error mb-4">
+              <span>Error al cargar la lista del carousel: {{ carouselResource.error() }}</span>
+            </div>
+            <button (click)="createCarouselList()" class="btn btn-primary">
+              Crear Lista del Carousel
+            </button>
+          } @else {
+            <div class="space-y-4">
+              <div class="flex items-center justify-between p-4 bg-base-300 rounded-lg">
+                <div>
+                  <h3 class="font-semibold">{{ carouselResource.value()?.title }}</h3>
+                  <p class="text-sm opacity-70">{{ carouselResource.value()?.description }}</p>
+                  <p class="text-sm">{{ carouselResource.value()?.bookCount || 0 }} libros en el carousel</p>
+                </div>
+                <div class="badge badge-primary">CAROUSEL</div>
+              </div>
+
+              <div class="flex space-x-4">
+                <a
+                  [routerLink]="['/lists', carouselResource.value()?.id]"
+                  class="btn btn-primary"
+                >
+                  <i class="fas fa-edit mr-2"></i>
+                  Gestionar Libros del Carousel
+                </a>
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- Información de uso -->
+        <div class="bg-info/20 rounded-lg p-4">
+          <h3 class="font-semibold mb-2">Cómo funciona:</h3>
+          <ul class="text-sm list-disc list-inside space-y-1">
+            <li>La lista "Home Carousel" controla los libros del carousel principal</li>
+            <li>Usa el botón "Gestionar Libros" para agregar/remover libros</li>
+            <li>Máximo recomendado: 10 libros para mejor visualización</li>
+            <li>Los cambios se reflejan inmediatamente en el home</li>
+            <li>Solo administradores pueden modificar esta lista</li>
+          </ul>
+        </div>
+
+        <!-- Vista previa del carousel -->
+        @if (carouselResource.value() && booksResource.value()) {
+          <div class="mt-8">
+            <h3 class="text-lg font-semibold mb-4">Vista Previa del Carousel</h3>
+            <div class="bg-base-100 rounded-lg p-4">
+              @if (booksResource.value()!.length > 0) {
+                <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+                  @for (book of booksResource.value(); track book.id) {
+                    <div class="text-center">
+                      <img
+                        [src]="book.imageUrl || 'assets/default-book-cover.jpg'"
+                        [alt]="book.title"
+                        class="w-20 h-28 object-cover rounded mx-auto mb-2"
+                      >
+                      <p class="text-xs font-medium line-clamp-2">{{ book.title }}</p>
+                    </div>
+                  }
+                </div>
+              } @else {
+                <div class="text-center py-8 text-gray-500">
+                  <i class="fas fa-inbox text-4xl mb-3"></i>
+                  <p>No hay libros en el carousel</p>
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    </div>

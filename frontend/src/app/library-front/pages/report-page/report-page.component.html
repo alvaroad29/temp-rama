@@ -1,0 +1,157 @@
+<!-- report-page.component.html -->
+<div class="max-w-3xl mx-auto p-4 sm:p-6 lg:p-8">
+  <h1 class="text-2xl font-bold mb-2">Reportar problema</h1>
+
+  <!-- Información del libro -->
+  @if (isBookLoading()) {
+    <div class="skeleton w-full h-20 mb-6"></div>
+  } @else if (book()) {
+    <div class="bg-base-200 rounded-lg p-4 mb-6">
+      <h2 class="font-semibold text-lg mb-2">Libro reportado:</h2>
+      <div class="flex items-center gap-4">
+        @if (book()!.imageUrl) {
+          <img
+            [src]="book()!.imageUrl"
+            [alt]="book()!.title"
+            class="w-16 h-20 object-cover rounded"
+          >
+        }
+        <div>
+          <h3 class="font-medium">{{ book()!.title }}</h3>
+          <p class="text-sm text-base-content/70">por {{ book()!.author.displayName }}</p>
+        </div>
+      </div>
+    </div>
+  }
+
+  <form [formGroup]="reportForm" (ngSubmit)="onSubmit()" class="space-y-6">
+    <!-- Mensajes de error -->
+    @if (hasError()) {
+      <div class="alert alert-error">
+        <ul class="list-disc list-inside">
+          <!-- Usar un array fijo para evitar el error de iteración -->
+          @for (error of errorMessages(); track $index) {
+            <li>{{ error }}</li>
+          }
+        </ul>
+      </div>
+    }
+
+    <!-- Tipo de reporte -->
+    <div>
+      <div class="flex justify-between items-center mb-1">
+        <label for="reportType" class="label-text">Tipo de reporte *</label>
+        @if (formUtils.isValidField(reportForm, 'reportType')) {
+          <span class="text-sm text-error">
+            {{ formUtils.getFieldError(reportForm, 'reportType') }}
+          </span>
+        }
+      </div>
+      <select
+        id="reportType"
+        formControlName="reportType"
+        class="select select-bordered w-full"
+        [class.select-error]="formUtils.isValidField(reportForm, 'reportType')"
+      >
+        @for (type of reportTypes; track type.value) {
+          <option [value]="type.value">{{ type.label }}</option>
+        }
+      </select>
+    </div>
+
+    <!-- Título del reporte -->
+    <div>
+      <div class="flex justify-between items-center mb-1">
+        <label for="title" class="label-text">Título del reporte *</label>
+        @if (formUtils.isValidField(reportForm, 'title')) {
+          <span class="text-sm text-error">
+            {{ formUtils.getFieldError(reportForm, 'title') }}
+          </span>
+        }
+      </div>
+      <input
+        id="title"
+        type="text"
+        formControlName="title"
+        placeholder="Describe brevemente el problema"
+        class="input input-bordered w-full"
+        [class.input-error]="formUtils.isValidField(reportForm, 'title')"
+      />
+      <div class="text-sm text-base-content/70 mt-1">
+        {{ reportForm.get('title')?.value?.length || 0 }}/200 caracteres
+      </div>
+    </div>
+
+    <!-- Descripción detallada -->
+    <div>
+      <div class="flex justify-between items-center mb-1">
+        <label for="description" class="label-text">Descripción detallada *</label>
+        @if (formUtils.isValidField(reportForm, 'description')) {
+          <span class="text-sm text-error">
+            {{ formUtils.getFieldError(reportForm, 'description') }}
+          </span>
+        }
+      </div>
+      <textarea
+        id="description"
+        formControlName="description"
+        placeholder="Proporciona todos los detalles relevantes sobre el problema..."
+        rows="8"
+        class="textarea textarea-bordered w-full"
+        [class.textarea-error]="formUtils.isValidField(reportForm, 'description')"
+      ></textarea>
+      <div class="flex justify-between text-sm mt-1">
+        <span class="text-base-content/70">
+          {{ characterCount }}/{{ maxCharacters }} caracteres
+        </span>
+        @if (characterCount > maxCharacters * 0.8) {
+          <span class="text-warning">Te quedan pocos caracteres</span>
+        }
+      </div>
+    </div>
+
+    <!-- Información adicional -->
+    <div class="bg-info/10 border border-info/20 rounded-lg p-4">
+      <h3 class="font-semibold text-info mb-2">📝 Información importante</h3>
+      <ul class="text-sm space-y-1">
+        <li>• Revisaremos tu reporte en un plazo máximo de 48 horas</li>
+        <li>• Te notificaremos cuando se actualice el estado de tu reporte</li>
+        <li>• Puedes ver el historial de tus reportes en tu perfil de usuario</li>
+        <li>• Para problemas urgentes, contacta directamente al soporte</li>
+      </ul>
+    </div>
+
+    <!-- Botones de acción -->
+    <div class="flex gap-4 mt-8">
+      <button
+        type="button"
+        class="btn btn-outline"
+        (click)="bookId() ? router.navigate(['/library', bookId()]) : router.navigate(['/library'])"
+        [disabled]="isLoading()"
+      >
+        Cancelar
+      </button>
+      <button
+        type="submit"
+        class="btn btn-primary flex-1"
+        [disabled]="isLoading() || reportForm.invalid"
+      >
+        @if (isLoading()) {
+          <span class="loading loading-spinner"></span>
+          Enviando reporte...
+        } @else {
+          Enviar reporte
+        }
+      </button>
+    </div>
+  </form>
+
+  <!-- Mensaje de éxito -->
+  @if (successMessage()) {
+    <div class="fixed bottom-4 right-4 z-50 max-w-sm">
+      <div class="alert alert-success shadow-lg animate-in slide-in-from-right">
+        <span>{{ successMessage() }}</span>
+      </div>
+    </div>
+  }
+</div>

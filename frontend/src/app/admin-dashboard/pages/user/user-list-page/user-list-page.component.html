@@ -1,0 +1,227 @@
+<!-- user-list-page.component.html -->
+<div class="container mx-auto px-4 py-6">
+  <!-- Header -->
+  <div class="mb-6">
+    <h1 class="text-2xl font-bold">Gestión de Usuarios</h1>
+    <p>Administra los usuarios del sistema</p>
+  </div>
+
+  <!-- Filtros y Búsqueda -->
+  <div class="rounded-lg shadow p-6 mb-6">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <!-- Búsqueda -->
+      <div class="md:col-span-2">
+        <label class="block text-sm font-medium mb-2">Buscar</label>
+        <div class="flex gap-2">
+          <input
+            type="text"
+            [value]="searchText()"
+            (input)="searchText.set($any($event.target).value)"
+            placeholder="Buscar usuarios..."
+            class="flex-1 input input-bordered focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+          <select
+            [value]="searchIn()"
+            (change)="searchIn.set($any($event.target).value)"
+            class="select select-bordered focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="all">Todos los campos</option>
+            <option value="username">Username</option>
+            <option value="id">ID</option>
+          </select>
+          <button
+            (click)="onSearch()"
+            class="px-4 py-2 bg-primary text-primary-content rounded-md hover:bg-primary/80 focus:outline-none focus:ring-2 focus:bg-primary/80 cursor-pointer"
+          >
+            Buscar
+          </button>
+        </div>
+      </div>
+
+      <!-- Filtro de baneo -->
+      <div>
+        <label class="block text-sm font-medium mb-2">Estado</label>
+        <select
+          [value]="isBanned() === undefined ? '' : isBanned()"
+          (change)="onBannedChange($any($event.target).value)"
+          class="select select-bordered w-full"
+        >
+          <option value="">Todos</option>
+          <option value="true">Baneados</option>
+          <option value="false">No baneados</option>
+        </select>
+      </div>
+
+      <!-- Ordenamiento -->
+      <div>
+        <label class="block text-sm font-medium mb-2">Ordenar por</label>
+        <select
+          [value]="sortBy()"
+          (change)="sortBy.set($any($event.target).value); onFilterChange()"
+          class="select select-bordered w-full"
+        >
+          <option value="username">Username</option>
+          <option value="email">Email</option>
+          <option value="banned">Estado de baneo</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  @if (usersResource.isLoading()) {
+    <div class="flex justify-center items-center py-12">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+    </div>
+  }
+
+  <!-- Error -->
+  @if (usersResource.error()) {
+    <div class="bg-red-50 border border-red-200 rounded-md p-4 mb-6">
+      <div class="flex">
+        <div class="flex-shrink-0">
+          <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+          </svg>
+        </div>
+        <div class="ml-3">
+          <h3 class="text-sm font-medium text-red-800">Error al cargar los usuarios</h3>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Tabla de usuarios -->
+  @if (!usersResource.isLoading() && !usersResource.error()) {
+    @if (users().length > 0) {
+      <div class="shadow overflow-hidden sm:rounded-lg">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead>
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                Usuario
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                Email
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                Roles
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                Estado
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                Acciones
+              </th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-200">
+            @for (user of users(); track user.id) {
+              <tr class="hover:bg-base-300">
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="flex items-center">
+                    <div class="flex-shrink-0 h-10 w-10">
+                      <img
+                        class="h-10 w-10 rounded-full"
+                        [src]="user.imageUrl || '/assets/image-placeholder.png'"
+                        [alt]="user.userName"
+                      >
+                    </div>
+                    <div class="ml-4">
+                      <div class="text-sm font-medium">
+                        {{ user.userName }}
+                      </div>
+                      <div class="text-sm text-gray-500">
+                        {{ user.displayName }}
+                      </div>
+                    </div>
+                  </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="text-sm">{{ user.email }}</div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="flex flex-wrap gap-1">
+                    @for (role of user.roles; track role) {
+                      <span
+                        [class]="getRoleBadgeClass(role)"
+                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                      >
+                        {{ role }}
+                      </span>
+                    }
+                  </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  @if (user.isBanned) {
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                      Baneado
+                    </span>
+                  } @else {
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                      Activo
+                    </span>
+                  }
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                  <div class="flex space-x-2">
+                    @if (user.roles.includes('Admin')) {
+                      <button
+                        (click)="removeAdmin(user)"
+                        class="text-orange-600 hover:text-orange-900"
+                      >
+                        Quitar Admin
+                      </button>
+                    } @else {
+                      <button
+                        (click)="assignAdmin(user)"
+                        class="text-green-600 hover:text-green-900 cursor-pointer"
+                      >
+                        Hacer Admin
+                      </button>
+                    }
+
+                    @if (user.isBanned) {
+                      <button
+                        (click)="unbanUser(user)"
+                        class="text-green-600 hover:text-green-900 cursor-pointer"
+                      >
+                        Desbanear
+                      </button>
+                    } @else {
+                      <button
+                        (click)="banUser(user)"
+                        class="text-red-600 hover:text-red-900 cursor-pointer"
+                      >
+                        Banear
+                      </button>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+
+        <!-- Paginación -->
+        @if (totalPages() > 1) {
+          <div class="px-4 py-3 border-t">
+            <shared-pagination
+              [currentPage]="paginationService.currentPage()"
+              [pages]="totalPages()"
+            />
+          </div>
+        }
+      </div>
+    } @else {
+      <!-- Empty state -->
+      <div class="text-center py-12">
+        <svg class="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <h3 class="mt-2 text-sm font-medium">No se encontraron usuarios</h3>
+        <p class="mt-1 text-sm">Intenta ajustar los filtros de búsqueda.</p>
+      </div>
+    }
+  }
+</div>

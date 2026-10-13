@@ -1,0 +1,331 @@
+<!-- admin-dashboard-page.component.html -->
+<div class="min-h-screen bg-base-100 py-6 px-4 sm:px-6 lg:px-8">
+  <div class="max-w-7xl mx-auto">
+
+    <!-- Header -->
+    <div class="mb-8">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 class="text-3xl font-bold text-base-content mb-2">Dashboard de Administración</h1>
+          <p class="text-base-content/60">
+            Resumen general del sistema y métricas clave
+          </p>
+        </div>
+        <div class="flex gap-2">
+          <button
+            (click)="reload()"
+            class="btn btn-ghost gap-2"
+            [disabled]="isLoading()"
+          >
+            <i class="fas fa-sync-alt" [class.animate-spin]="isLoading()"></i>
+            Actualizar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Estado: Cargando -->
+    @if (isLoading()) {
+      <div class="space-y-6">
+        <!-- Skeletons para las tarjetas -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          @for (i of [1,2,3,4]; track i) {
+            <div class="card bg-base-200 shadow-xl animate-pulse">
+              <div class="card-body">
+                <div class="flex items-center gap-4">
+                  <div class="w-12 h-12 bg-base-300 rounded-full"></div>
+                  <div class="flex-1 space-y-2">
+                    <div class="h-4 bg-base-300 rounded w-3/4"></div>
+                    <div class="h-6 bg-base-300 rounded w-1/2"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- Estado: Error -->
+    @if (error() && !isLoading()) {
+      <div class="alert alert-error shadow-lg">
+        <div>
+          <i class="fas fa-exclamation-triangle"></i>
+          <span>{{ error() }}</span>
+        </div>
+        <button class="btn btn-ghost btn-sm" (click)="reload()">
+          Reintentar
+        </button>
+      </div>
+    }
+
+    <!-- Estado: Con datos -->
+    @if (statistics() && !isLoading()) {
+      @let stats = statistics()!;
+
+      <!-- Tarjetas de Métricas Principales -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <!-- Usuarios -->
+        <div class="card bg-base-200 shadow-xl hover:shadow-2xl transition-shadow cursor-pointer" routerLink="/admin/users">
+          <div class="card-body">
+            <div class="flex items-center gap-4">
+              <!-- <div class="rounded-full bg-primary/10 p-3">
+                <i class="fas fa-users text-2xl text-primary"></i>
+              </div> -->
+              <div class="flex-1">
+                <h3 class="card-title text-lg">Usuarios</h3>
+                <div class="text-3xl font-bold text-primary">{{ formatNumber(stats.users.totalUsers) }}</div>
+                <div class="flex flex-wrap gap-2 mt-2">
+                  <span class="badge badge-success  badge-sm whitespace-nowrap">+{{ formatNumber(stats.users.newUsersThisWeek) }} sem</span>
+                  <span class="badge badge-info  badge-sm whitespace-nowrap">+{{ formatNumber(stats.users.newUsersThisMonth) }} mes</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Libros -->
+        <div class="card bg-base-200 shadow-xl hover:shadow-2xl transition-shadow cursor-pointer" routerLink="/admin/books">
+          <div class="card-body">
+            <div class="flex items-center gap-4">
+              <!-- <div class="rounded-full bg-secondary/10 p-3">
+                <i class="fas fa-book text-2xl text-secondary"></i>
+              </div> -->
+              <div class="flex-1">
+                <h3 class="card-title text-lg">Libros</h3>
+                <div class="text-3xl font-bold text-secondary">{{ formatNumber(stats.books.totalBooks) }}</div>
+                <div class="flex flex-wrap gap-2 mt-2">
+                  <span class="badge badge-success  badge-sm whitespace-nowrap">{{ formatNumber(stats.books.activeBooks) }} activos</span>
+                  <span class="badge badge-info  badge-sm whitespace-nowrap">{{ formatNumber(stats.books.totalChapters) }} caps</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Reportes Pendientes -->
+        <div class="card bg-base-200 shadow-xl hover:shadow-2xl transition-shadow cursor-pointer" routerLink="/admin/reports">
+          <div class="card-body">
+            <div class="flex items-center gap-4">
+              <!-- <div class="rounded-full bg-warning/10 p-3">
+                <i class="fas fa-flag text-2xl text-warning"></i>
+              </div> -->
+              <div class="flex-1">
+                <h3 class="card-title text-lg">Reportes</h3>
+                <div class="text-3xl font-bold text-warning">{{ formatNumber(stats.reports.totalReports) }}</div>
+                <div class="flex flex-wrap gap-2 mt-2">
+                  <span [class]="getStatusBadgeClass(stats.reports.pendingReports, true)">
+                    {{ formatNumber(stats.reports.pendingReports) }} pendientes
+                  </span>
+                  <span class="badge badge-ghost badge-sm whitespace-nowrap">{{ formatNumber(stats.reports.inReviewReports) }} en revisión</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Solicitudes Pendientes -->
+        <div class="card bg-base-200 shadow-xl hover:shadow-2xl transition-shadow cursor-pointer" routerLink="/admin/submissions">
+          <div class="card-body">
+            <div class="flex items-center gap-4">
+              <!-- <div class="rounded-full bg-info/10 p-3">
+                <i class="fas fa-clipboard-list text-2xl text-info"></i>
+              </div> -->
+              <div class="flex-1">
+                <h3 class="card-title text-lg">Solicitudes</h3>
+                <div class="text-3xl font-bold text-info">{{ formatNumber(stats.submissions.totalSubmissions) }}</div>
+                <div class="flex flex-wrap gap-1 mt-2">
+                  <span [class]="getStatusBadgeClass(stats.submissions.pendingSubmissions, true)">
+                    {{ formatNumber(stats.submissions.pendingSubmissions) }} pendientes
+                  </span>
+                  <span class="badge badge-success  badge-sm whitespace-nowrap">{{ formatNumber(stats.submissions.approvedSubmissions) }} aprobadas</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sección de Alertas y Acciones Rápidas -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <!-- Alertas -->
+        <div class="card bg-base-200 shadow-xl">
+          <div class="card-body">
+            <h2 class="card-title text-xl mb-4">
+              <!-- <i class="fas fa-bell text-warning"></i> -->
+              Alertas y Acciones Requeridas
+            </h2>
+            <div class="space-y-3">
+              @if (stats.reports.pendingReports > 0) {
+                <div class="alert alert-warning">
+                  <div>
+                    <!-- <i class="fas fa-flag"></i> -->
+                    <span>Tienes <strong>{{ stats.reports.pendingReports }}</strong> reportes pendientes de revisión</span>
+                  </div>
+                  <button class="btn btn-sm btn-warning" routerLink="/admin/reports">Revisar</button>
+                </div>
+              }
+
+              @if (stats.submissions.pendingSubmissions > 0) {
+                <div class="alert alert-info">
+                  <div>
+                    <!-- <i class="fas fa-clipboard-list"></i> -->
+                    <span>Hay <strong>{{ stats.submissions.pendingSubmissions }}</strong> solicitudes de libros esperando</span>
+                  </div>
+                  <button class="btn btn-sm btn-info" routerLink="/admin/submissions">Revisar</button>
+                </div>
+              }
+
+              @if (stats.users.bannedUsers > 0) {
+                <div class="alert alert-error">
+                  <div>
+                    <!-- <i class="fas fa-user-slash"></i> -->
+                    <span><strong>{{ stats.users.bannedUsers }}</strong> usuarios baneados en el sistema</span>
+                  </div>
+                  <button class="btn btn-sm btn-error" routerLink="/admin/users">Gestionar</button>
+                </div>
+              }
+
+              @if (stats.reports.pendingReports === 0 && stats.submissions.pendingSubmissions === 0) {
+                <div class="alert alert-success">
+                  <div>
+                    <!-- <i class="fas fa-check-circle"></i> -->
+                    <span>¡Todo al día! No hay acciones pendientes</span>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- Accesos Rápidos -->
+        <div class="card bg-base-200 shadow-xl">
+          <div class="card-body">
+            <h2 class="card-title text-xl mb-4">
+              <!-- <i class="fas fa-bolt text-primary"></i> -->
+              Accesos Rápidos
+            </h2>
+            <div class="grid grid-cols-2 gap-4">
+              <button class="btn btn-outline justify-start gap-3" routerLink="/admin/users">
+                <!-- <i class="fas fa-users text-primary"></i> -->
+                <span>Gestionar Usuarios</span>
+              </button>
+              <button class="btn btn-outline justify-start gap-3" routerLink="/admin/books">
+                <!-- <i class="fas fa-book text-secondary"></i> -->
+                <span>Ver Libros</span>
+              </button>
+              <button class="btn btn-outline justify-start gap-3" routerLink="/admin/reports">
+                <!-- <i class="fas fa-flag text-warning"></i> -->
+                <span>Revisar Reportes</span>
+              </button>
+              <button class="btn btn-outline justify-start gap-3" routerLink="/admin/submissions">
+                <!-- <i class="fas fa-clipboard-list text-info"></i> -->
+                <span>Solicitudes</span>
+              </button>
+              <button class="btn btn-outline justify-start gap-3" routerLink="/admin/announcements">
+                <!-- <i class="fas fa-bullhorn text-success"></i> -->
+                <span>Anuncios</span>
+              </button>
+              <button class="btn btn-outline justify-start gap-3" routerLink="/admin/genres">
+                <!-- <i class="fas fa-tags text-accent"></i> -->
+                <span>Géneros</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Estadísticas Detalladas -->
+      <!-- <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+        <div class="card bg-base-200 shadow-xl">
+          <div class="card-body">
+            <h2 class="card-title text-xl mb-4">
+              <i class="fas fa-chart-pie text-primary"></i>
+              Resumen por Estados
+            </h2>
+            <div class="space-y-4">
+
+              <div>
+                <h3 class="font-semibold mb-2">Libros</h3>
+                <div class="space-y-2">
+                  <div class="flex justify-between items-center">
+                    <span>Activos</span>
+                    <div class="flex items-center gap-2">
+                      <span class="badge badge-success">{{ formatNumber(stats.books.activeBooks) }}</span>
+                      <span class="text-sm text-base-content/60">
+                        ({{ getCompletionPercentage(stats.books.activeBooks, stats.books.totalBooks) }}%)
+                      </span>
+                    </div>
+                  </div>
+                  <div class="flex justify-between items-center">
+                    <span>Completados</span>
+                    <span class="badge badge-info">{{ formatNumber(stats.books.completedBooks) }}</span>
+                  </div>
+                  <div class="flex justify-between items-center">
+                    <span>Pausados</span>
+                    <span class="badge badge-warning">{{ formatNumber(stats.books.pausedBooks) }}</span>
+                  </div>
+                  <div class="flex justify-between items-center">
+                    <span>Inactivos</span>
+                    <span class="badge badge-error">{{ formatNumber(stats.books.inactiveBooks) }}</span>
+                  </div>
+                </div>
+              </div>
+
+
+              <div>
+                <h3 class="font-semibold mb-2">Reportes</h3>
+                <div class="space-y-2">
+                  <div class="flex justify-between items-center">
+                    <span>Pendientes</span>
+                    <span class="badge badge-warning">{{ formatNumber(stats.reports.pendingReports) }}</span>
+                  </div>
+                  <div class="flex justify-between items-center">
+                    <span>En Revisión</span>
+                    <span class="badge badge-info">{{ formatNumber(stats.reports.inReviewReports) }}</span>
+                  </div>
+                  <div class="flex justify-between items-center">
+                    <span>Resueltos</span>
+                    <span class="badge badge-success">{{ formatNumber(stats.reports.resolvedReports) }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div> -->
+
+        <!-- Actividad Reciente -->
+        <!-- <div class="card bg-base-200 shadow-xl">
+          <div class="card-body">
+            <h2 class="card-title text-xl mb-4">
+              <i class="fas fa-chart-line text-secondary"></i>
+              Actividad Reciente
+            </h2>
+            @if (stats.recentActivity.length > 0) {
+              <div class="space-y-3">
+                @for (activity of stats.recentActivity.slice(-5).reverse(); track activity.date) {
+                  <div class="flex justify-between items-center p-3 bg-base-300 rounded-lg">
+                    <div>
+                      <div class="font-semibold">{{ activity.date | date:'mediumDate' }}</div>
+                      <div class="text-sm text-base-content/60 flex gap-4">
+                        <span><i class="fas fa-user-plus text-success"></i> {{ activity.newUsers }} usuarios</span>
+                        <span><i class="fas fa-book text-info"></i> {{ activity.newBooks }} libros</span>
+                        <span><i class="fas fa-flag text-warning"></i> {{ activity.newReports }} reportes</span>
+                      </div>
+                    </div>
+                  </div>
+                }
+              </div>
+            } @else {
+              <div class="text-center py-8 text-base-content/60">
+                <i class="fas fa-chart-line text-4xl mb-2"></i>
+                <p>No hay actividad reciente</p>
+              </div>
+            }
+          </div>
+        </div> -->
+      <!-- </div> -->
+    }
+  </div>
+</div>

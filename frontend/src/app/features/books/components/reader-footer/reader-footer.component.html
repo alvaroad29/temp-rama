@@ -1,0 +1,98 @@
+<!-- reader-footer.component.html -->
+<div
+  class="fixed bottom-0 left-0 right-0 bg-base-300 px-2 py-3 border-t border-base-content/10 transition-transform duration-300 z-60"
+  [class.translate-y-full]="!showFooter"
+>
+  <div class="max-w-4xl mx-auto flex justify-between items-center">
+
+
+    <!-- Botón Volver a la Novela (Izquierda) -->
+    <a
+      [routerLink]="['/library', bookId()]"
+      class="flex items-center gap-1 text-sm px-3 py-2 hover:text-primary cursor-pointer transition-colors"
+      title="Volver a la novela"
+    >
+      <i-lucide [img]="arrowLeft" class="w-4 h-4"></i-lucide>
+      <span class="hidden md:block">Libro</span>
+    </a>
+
+    <!-- Botones de Navegación Centrados -->
+    <div class="flex items-center gap-4">
+      <!-- Botón de Pantalla Completa-->
+      <button
+        (click)="toggleReadingMode()"
+        class="flex items-center justify-center w-10 h-10 rounded-full cursor-pointer transition-colors hover:text-primary"
+        [class.text-primary]="readingMode()"
+        [class.text-base-content]="!readingMode()"
+        [title]="readingMode() ? 'Salir de pantalla completa' : 'Pantalla completa'"
+      >
+        <i-lucide
+          [img]="readingMode() ? minimize : maximize"
+          class="w-5 h-5"
+        ></i-lucide>
+    </button>
+
+      <!-- Botón Anterior -->
+      <a
+        class="flex items-center gap-1 text-sm px-3 py-2 hover:text-primary cursor-pointer transition-colors"
+        [class.pointer-events-none]="previousChapter() === null"
+        [class.opacity-50]="previousChapter() === null"
+        [routerLink]="previousChapter() !== null ? ['/library', bookId(), previousChapter()] : null"
+        title="Capítulo anterior"
+      >
+        <i-lucide [img]="left" class="w-4 h-4"></i-lucide>
+        <span class="hidden md:block">Anterior</span>
+      </a>
+
+
+
+      <!-- Botón de Configuración -->
+      <button
+        (click)="toggleSettings()"
+        class="flex items-center justify-center w-10 h-10 rounded-full cursor-pointer transition-colors hover:text-primary"
+        [class.text-primary]="isSettingsOpen"
+        [class.text-base-content]="!isSettingsOpen"
+        title="Configuración de lectura"
+      >
+        <i-lucide [img]="setting" class="w-5 h-5"></i-lucide>
+      </button>
+
+      <!-- Botón Siguiente -->
+      <a
+        class="flex items-center gap-1 text-sm px-3 py-2 hover:text-primary cursor-pointer transition-colors"
+        [class.pointer-events-none]="nextChapter() === null"
+        [class.opacity-50]="nextChapter() === null"
+        [routerLink]="nextChapter() !== null ? ['/library', bookId(), nextChapter()] : null"
+        title="Capítulo siguiente"
+      >
+        <span class="hidden md:block">Siguiente</span>
+        <i-lucide [img]="right" class="w-4 h-4"></i-lucide>
+      </a>
+
+    </div>
+
+    <!-- Espacio vacío para balancear el layout (derecha) -->
+    <div class="w-20"></div>
+
+  </div>
+</div>
+
+<!-- Menú de Configuración -->
+<reader-settings-menu
+  [isOpen]="isSettingsOpen"
+  (closeEvent)="closeSettings()"
+></reader-settings-menu>
+<!--
+translate-y:
+Esta es la clase base en Tailwind CSS para el desplazamiento vertical, utilizando la función translateY() de CSS.
+full:
+Esta parte de la clase especifica la cantidad de desplazamiento. En Tailwind, full representa el 100% del tamaño del elemento padre en la dirección especificada (en este caso, verticalmente).
+-->
+
+<!--
+fixed bottom-0: el footer se queda fijo abajo.
+
+transition-transform: animación suave cuando aparece o desaparece.
+
+[class.translate-y-full]="!showFooter": si showFooter es false, se le aplica translate-y-full, que lo empuja hacia abajo fuera de pantalla (efecto de ocultamiento suave).
+-->

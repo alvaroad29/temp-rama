@@ -1,0 +1,73 @@
+<!-- Slider main container -->
+<div class="swiper" #swiperDiv>
+  <!-- Additional required wrapper -->
+  <div class="swiper-wrapper">
+    <!-- Slides -->
+    @for (slide of books(); track $index) {
+      <div class="swiper-slide">
+        <carousel-slide [slide]="slide"></carousel-slide>
+    </div>
+    }
+
+  </div>
+  <!-- If we need pagination -->
+  <div class="swiper-pagination"></div>
+
+  <!-- If we need navigation buttons -->
+  <div class="swiper-button-prev"></div>
+  <div class="swiper-button-next"></div>
+
+  <!-- If we need scrollbar -->
+  <div class="swiper-scrollbar"></div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!--
+<section class="flex justify-center">
+  @for (slide of slides; track $index) {
+      <section class="bg-linear-to-r from-red-400 to-blue-500 rounded-2xl p-6 m-2 bg-cover bg-center h-100"
+        [style.background-image]="'url(' + slide.image + ')'"
+      >
+    <article>
+      <section class="grid grid-cols-3 grid-rows-3">
+        <section class="col-span-3">
+          <h1 >{{slide.title}}</h1>
+          <p>{{slide.percentage}}%</p>
+          <p>{{slide.status}}</p>
+        </section>
+        <p class="col-span-2">{{slide.description}}</p>
+      </section>
+    </article>
+    <article>
+
+    </article>
+  </section>
+  }
+
+</section> -->
+

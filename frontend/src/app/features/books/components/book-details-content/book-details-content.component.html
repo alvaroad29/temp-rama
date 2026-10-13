@@ -1,0 +1,34 @@
+<div class="w-full">
+    @for (section of book()?.volumes; track section.id) {
+      <div class="mb-4 rounded-lg overflow-hidden bg-base-300 border-base-content/10">
+        <button
+          (click)="toggleSection(section.id)"
+          class="w-full p-4 text-left flex justify-between items-center transition-colors cursor-pointer hover:bg-neutral-500"
+
+        >
+          <h3 class="font-medium text-lg">{{ section.title }}</h3>
+            <i-lucide [img]="chevron" class="transform transition-transform duration-200" [class.rotate-180]="isExpanded(section.id)"></i-lucide>
+        </button>
+
+        <div
+          #contentDiv
+          [id]="'content-' + section.id"
+          class="overflow-hidden transition-all duration-300 ease-in-out"
+          [style.max-height]="isExpanded(section.id) ? getContentHeight(section.id) + 'px' : '0'"
+        >
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
+            @for (item of section.chapters; track item.id) {
+              <a
+                class="block rounded p-3 hover:bg-base-content/10 transition-colors cursor-pointer"
+                  [routerLink]="['/library', book()?.id, item.id]"
+              >
+                <h4 class="font-medium text-wrap">{{ item.title }}</h4>
+                <p class="text-sm mt-1">{{ item.publishDate | relativeTime | titlecase}}</p>
+                <p class="text-xs mt-1">{{ item.viewCount }} visualizaciones</p>
+              </a>
+            }
+          </div>
+        </div>
+      </div>
+    }
+  </div>

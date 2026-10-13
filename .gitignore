@@ -1,0 +1,29 @@
+# ---- General ----
+*.log
+*.tmp
+*.temp
+*.bak
+*.swp
+*.DS_Store
+Thumbs.db
+
+# ---- Node / Angular ----
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/
+frontend/.cache/
+frontend/.npm/
+
+# ---- VSCode Config ----
+.vscode/
+
+# ---- .NET / C# ----
+backend/bin/
+backend/obj/
+backend/.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+

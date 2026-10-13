@@ -1,0 +1,64 @@
+<div class="flex flex-col items-center sm:flex-row sm:items-start gap-4 pb-4">
+  <!-- Imagen - Centrada en mobile -->
+  <div class="flex-shrink-0 flex justify-center w-full sm:w-auto sm:justify-start">
+    <img [src]="list()?.imageUrl || '..../public/assets/image-placeholder.png'"
+         [alt]="list()?.title"
+         class="w-20 h-20 sm:w-24 sm:h-24 rounded object-cover border border-gray-600" />
+  </div>
+
+  <!-- Contenido - Centrado en mobile -->
+  <div class="flex-1 w-full text-center sm:text-left">
+    <!-- Título y meta-info -->
+    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-6">
+      <a class="text-2xl font-bold mb-2 sm:mb-0 cursor-pointer hover:text-primary">
+        {{ list()?.title }}
+      </a>
+      <div class="flex justify-center gap-4 sm:justify-start">
+        <a routerLink="/profile/edit"
+           class="text-primary underline cursor-pointer hover:text-purple-500 transition-colors"
+           title="Editar perfil">
+          editar
+        </a>
+        <a routerLink="/profile/edit"
+           class="text-error underline cursor-pointer hover:text-purple-500 transition-colors"
+           title="Editar perfil">
+          eliminar
+        </a>
+      </div>
+    </div>
+
+    <!-- Estadísticas - Centrado en mobile -->
+    <div class="flex flex-wrap justify-center sm:justify-start gap-4 text-sm mt-1">
+      <div class="flex items-center gap-1">
+        <i-lucide [img]="cant"></i-lucide>
+        {{ list()?.bookCount || 0 }} Series
+      </div>
+      <div class="flex items-center gap-1">
+        <i-lucide [img]="follow"></i-lucide>
+        {{ list()?.followersCount || 0 }} Follows
+      </div>
+      <div class="flex items-center gap-1">
+        <i-lucide [img]="calendar"></i-lucide>
+        {{ list()?.creationDate }}
+      </div>
+      <div class="flex items-center gap-1">
+        <i-lucide [img]="user"></i-lucide>
+        {{ list()?.creatorName || 'Desconocido' }}
+      </div>
+    </div>
+
+    <!-- Tags - Centrado en mobile -->
+    <div class="flex flex-wrap justify-center sm:justify-start gap-2 mt-2">
+      @for (item of list()?.genres; track $index) {
+        <span class="px-2 py-0.5 bg-base-100 rounded-full text-xs">
+          {{ item }}
+        </span>
+      }
+    </div>
+
+    <!-- Descripción - Centrado en mobile -->
+    <p class="mt-2 text-sm text-center sm:text-left">
+      {{ list()?.description || 'Sin descripción.' }}
+    </p>
+  </div>
+</div>

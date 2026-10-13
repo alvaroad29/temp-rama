@@ -1,0 +1,239 @@
+<div class="min-h-screen bg-base-100 py-6 px-4 sm:px-6 lg:px-8">
+  <div class="max-w-6xl mx-auto">
+
+    <!-- Estado: Cargando -->
+    @if (isLoading()) {
+      <div class="space-y-8">
+        <!-- Skeleton para información de la lista -->
+        <div class="bg-base-300 rounded-lg p-6 animate-pulse">
+          <div class="flex flex-col md:flex-row gap-6">
+            <div class="flex-shrink-0 mx-auto md:mx-0">
+              <div class="w-40 h-60 rounded bg-base-200"></div>
+            </div>
+            <div class="flex-1 space-y-4">
+              <div class="h-8 bg-base-200 rounded w-3/4"></div>
+              <div class="h-4 bg-base-200 rounded w-full"></div>
+              <div class="h-4 bg-base-200 rounded w-2/3"></div>
+              <div class="flex gap-4 mt-4">
+                <div class="h-6 bg-base-200 rounded w-16"></div>
+                <div class="h-6 bg-base-200 rounded w-16"></div>
+                <div class="h-6 bg-base-200 rounded w-16"></div>
+                <div class="h-6 bg-base-200 rounded w-16"></div>
+              </div>
+              <div class="flex gap-2 mt-4">
+                <div class="h-6 bg-base-200 rounded w-12"></div>
+                <div class="h-6 bg-base-200 rounded w-12"></div>
+                <div class="h-6 bg-base-200 rounded w-12"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Skeleton para grid de libros -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+          @for (i of [1,2,3,4,5,6,7,8]; track i) {
+            <div class="bg-base-300 rounded-lg overflow-hidden animate-pulse">
+              <div class="aspect-[3/4] bg-base-200"></div>
+              <div class="p-3 space-y-2">
+                <div class="h-4 bg-base-200 rounded"></div>
+                <div class="h-3 bg-base-200 rounded w-2/3"></div>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- Estado: Error -->
+    @if (error() && !isLoading()) {
+      <div class="alert alert-error shadow-lg my-6 text-center">
+        <div>
+          <span>Error al cargar la lista. Intenta nuevamente.</span>
+        </div>
+      </div>
+    }
+
+   <!-- Estado: Datos cargados -->
+    @if (!isLoading() && !error() && listData()) {
+      <div class="space-y-8">
+        <!-- Información de la lista -->
+        <div class="bg-base-300 rounded-lg p-6">
+          <div class="flex flex-col md:flex-row gap-6">
+            <!-- Imagen de la lista -->
+            <div class="flex-shrink-0 mx-auto md:mx-0">
+                <img [src]="listData()?.imageUrl || './assets/image-placeholder.png'"
+                     [alt]="listData()!.title"
+                     class="w-40 h-60 rounded object-cover border border-base-content/10 shadow-md" />
+            </div>
+
+            <!-- Contenido de la lista -->
+            <div class="flex-1 text-center md:text-left">
+              <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
+                <h1 class="text-3xl font-bold">{{ listData()!.title }}</h1>
+
+                <!-- Botones de acción -->
+                <div class="flex flex-col sm:flex-row gap-2">
+                  <!-- Botón de editar (solo para dueño) -->
+                  @if (isOwner()) {
+                    <a
+                      [routerLink]="['/user/lists/edit', listId]"
+                      class="btn btn-outline btn-primary gap-2"
+                    >
+                      <i-lucide [name]="editIcon" class="w-4 h-4"></i-lucide>
+                      Editar Lista
+                    </a>
+                  }
+
+                  <!-- Botón de seguir (solo para usuarios autenticados que no son dueños) -->
+                  @if (isAuthenticated() && !isOwner()) {
+                    <button
+                      (click)="isFollowing() ? unfollowList() : followList()"
+                      [disabled]="isFollowingLoading()"
+                      [class]="isFollowing()
+                        ? 'btn btn-outline btn-error'
+                        : 'btn btn-primary'"
+                      class="btn gap-2"
+                    >
+                      @if (isFollowingLoading()) {
+                        <span class="loading loading-spinner loading-sm"></span>
+                      } @else {
+                        <i-lucide [name]="heartIcon"
+                                  [class.fill-current]="isFollowing()"
+                                  class="w-4 h-4"></i-lucide>
+                      }
+                      {{ isFollowing() ? 'Dejar de seguir' : 'Seguir lista' }}
+                    </button>
+                  }
+                </div>
+              </div>
+
+              <p class="text-base-content/80 mb-6 leading-relaxed">
+                {{ listData()!.description || 'Esta lista no tiene descripción.' }}
+              </p>
+
+              <!-- Estadísticas -->
+              <div class="flex flex-wrap justify-center md:justify-start gap-4 text-sm mb-4">
+                <div class="flex items-center gap-2">
+                  <i-lucide [name]="bookOpenIcon" class="w-5 h-5"></i-lucide>
+                  <span>{{ listData()!.bookCount }} {{ listData()!.bookCount === 1 ? 'libro' : 'libros' }}</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <i-lucide [name]="followersIcon" class="w-5 h-5"></i-lucide>
+                  <span>{{ listData()!.followersCount }} {{ listData()!.followersCount === 1 ? 'seguidor' : 'seguidores' }}</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <i-lucide [name]="calendarIcon" class="w-5 h-5"></i-lucide>
+                  <span>Creada {{ listData()!.creationDate | relativeTime }}</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <i-lucide [name]="userIcon" class="w-5 h-5"></i-lucide>
+                  <span>Por {{ listData()!.creatorName }}</span>
+                </div>
+              </div>
+
+              <!-- Géneros -->
+              @if (listData()!.genres && listData()!.genres.length > 0) {
+                <div class="flex flex-wrap justify-center md:justify-start gap-2">
+                  @for (genre of listData()!.genres; track genre.id) {
+                    <span class="badge badge-outline text-xs">{{ genre.name }}</span>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- Libros de la lista -->
+        <div>
+          <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 gap-4">
+            <h2 class="text-2xl font-semibold">Libros en esta lista</h2>
+
+            <!-- Información del dueño -->
+            @if (isOwner()) {
+              <div class="flex items-center gap-3">
+                <div class="badge badge-primary badge-lg">
+                  <i-lucide [name]="userIcon" class="w-3 h-3 mr-1"></i-lucide>
+                  Eres el dueño
+                </div>
+              </div>
+            }
+          </div>
+
+          @if (books().length > 0) {
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-6">
+              @for (book of books(); track book.id; let i = $index) {
+                <div class="relative group h-[200px] md:h-[280px] lg:h-[300px]">
+                  <!-- Botón eliminar (solo para dueño) -->
+                  @if (isOwner()) {
+                    <button
+                      (click)="removeBookFromList(+book.id, book.title)"
+                      class="absolute -top-2 -right-2 z-80 bg-error text-error-content rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 shadow-lg hover:bg-error/90 cursor-pointer"
+                      title="Eliminar de la lista"
+                    >
+                      <i-lucide [name]="trashIcon" class="w-4 h-4"></i-lucide>
+                    </button>
+                  }
+
+                  <book-card [card]="book"></book-card>
+                </div>
+              }
+            </div>
+
+            <!-- Paginación -->
+            @if (totalPages() > 1) {
+              <div class="mt-8">
+                <shared-pagination
+                  [currentPage]="paginationService.currentPage()"
+                  [pages]="totalPages()"
+                />
+              </div>
+            }
+          } @else {
+            <div class="text-center py-12 bg-base-200 rounded-lg">
+              <div class="max-w-md mx-auto">
+                <i-lucide [name]="bookOpenIcon" class="w-16 h-16 text-base-content/30 mx-auto mb-4"></i-lucide>
+                <p class="text-base-content/70 mb-4">No hay libros en esta lista.</p>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- Contenedor de notificaciones -->
+  <div class="fixed bottom-4 right-4 z-[100] space-y-2 max-w-sm w-full">
+    @for (notification of notifications(); track notification.id) {
+      <div
+        class="p-4 rounded-lg shadow-lg border-l-4 transition-all duration-300 transform"
+        [class.bg-green-50]="notification.type === 'success'"
+        [class.bg-red-50]="notification.type === 'error'"
+        [class.border-green-500]="notification.type === 'success'"
+        [class.border-red-500]="notification.type === 'error'"
+        [class.text-green-800]="notification.type === 'success'"
+        [class.text-red-800]="notification.type === 'error'"
+        [class.translate-x-0]="notification.visible"
+        [class.opacity-100]="notification.visible"
+        [class.translate-x-full]="!notification.visible"
+        [class.opacity-0]="!notification.visible"
+      >
+        <div class="flex items-start justify-between">
+          <div class="flex items-center">
+            @if (notification.type === 'success') {
+              <i class="fas fa-check-circle text-green-500 mr-3"></i>
+            } @else {
+              <i class="fas fa-exclamation-circle text-red-500 mr-3"></i>
+            }
+            <span class="text-sm font-medium">{{ notification.message }}</span>
+          </div>
+          <button
+            (click)="closeNotification(notification.id)"
+            class="ml-4 text-gray-400 hover:text-gray-600 transition-colors"
+          >
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+      </div>
+    }
+  </div>
+</div>

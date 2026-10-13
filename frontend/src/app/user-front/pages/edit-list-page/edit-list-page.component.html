@@ -1,0 +1,229 @@
+<div class="max-w-3xl mx-auto p-4 sm:p-6 lg:p-8">
+  <h1 class="text-2xl font-bold mb-6">Editar lista</h1>
+
+  <!-- Estado: Cargando lista -->
+  @if (isLoadingList()) {
+    <div class="space-y-6 animate-pulse">
+      <div class="h-8 bg-base-300 rounded w-1/2"></div>
+      <div class="h-4 bg-base-300 rounded w-full"></div>
+      <div class="h-4 bg-base-300 rounded w-3/4"></div>
+    </div>
+  }
+
+  <!-- Estado: Lista cargada -->
+  @if (!isLoadingList() && currentList()) {
+    <form [formGroup]="listForm" (ngSubmit)="onSubmit()" class="space-y-6">
+
+      <!-- Mensajes de error generales -->
+      @if (hasError()) {
+        <div class="alert alert-error shadow-lg">
+          <div>
+            @for (error of errorMessages(); track $index) {
+              <span class="text-sm">{{ error }}</span>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- Título -->
+      <div>
+        <div class="flex justify-between items-center mb-1">
+          <label for="title" class="label-text">Título *</label>
+          @if (formUtils.isValidField(listForm, 'title')) {
+            <span class="text-sm text-error">
+              {{ formUtils.getFieldError(listForm, 'title') }}
+            </span>
+          }
+        </div>
+        <input
+          id="title"
+          type="text"
+          formControlName="title"
+          placeholder="Ingresa el título de la lista"
+          class="input input-bordered w-full"
+          [class.input-error]="formUtils.isValidField(listForm, 'title')"
+        />
+        <div class="text-sm text-base-content/70 mt-1">
+          {{ listForm.get('title')?.value?.length || 0 }}/100 caracteres
+        </div>
+      </div>
+
+      <!-- Descripción -->
+      <div>
+        <div class="flex justify-between items-center mb-1">
+          <label for="description" class="label-text">Descripción</label>
+          @if (formUtils.isValidField(listForm, 'description')) {
+            <span class="text-sm text-error">
+              {{ formUtils.getFieldError(listForm, 'description') }}
+            </span>
+          }
+        </div>
+        <textarea
+          id="description"
+          formControlName="description"
+          placeholder="Describe el propósito de tu lista..."
+          rows="4"
+          class="textarea textarea-bordered w-full"
+          [class.textarea-error]="formUtils.isValidField(listForm, 'description')"
+        ></textarea>
+        <div class="text-sm text-base-content/70 mt-1">
+          {{ listForm.get('description')?.value?.length || 0 }}/500 caracteres
+        </div>
+      </div>
+
+      <!-- Carga de imagen -->
+      <div>
+        <label class="label-text mb-2">Imagen de portada</label>
+
+        <!-- Preview de imagen -->
+        @if (imagePreview()) {
+          <div class="mb-4">
+            <div class="relative inline-block">
+              <img
+                [src]="imagePreview()!"
+                alt="Vista previa de la imagen"
+                class="w-40 h-40 object-cover rounded-lg border-2 border-base-content/20"
+              />
+              <div class="absolute -top-2 -right-2 flex gap-1">
+                @if (selectedImage()) {
+                  <button
+                    type="button"
+                    (click)="removeImage()"
+                    class="btn btn-circle btn-xs btn-warning"
+                    title="Cancelar nueva imagen"
+                  >
+                    ↶
+                  </button>
+                }
+                <button
+                  type="button"
+                  (click)="removeCurrentImage()"
+                  class="btn btn-circle btn-xs btn-error"
+                  title="Eliminar imagen"
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+            @if (selectedImage()) {
+              <p class="text-sm text-warning mt-2">Nueva imagen seleccionada</p>
+            }
+          </div>
+        }
+
+        <!-- Input de archivo -->
+        <div class="flex items-center gap-4">
+          <input
+            id="imageUpload"
+            type="file"
+            accept=".jpg,.jpeg,.png,.webp"
+            (change)="onImageSelected($event)"
+            class="file-input file-input-bordered file-input-sm w-full max-w-xs"
+          />
+          <div class="text-sm text-base-content/70">
+            Formatos: JPG, JPEG, PNG, WebP (max. 2MB)
+          </div>
+        </div>
+
+        <!-- Mensaje de error de imagen -->
+        @if (imageError()) {
+          <div class="text-error text-sm mt-2">
+            {{ imageError() }}
+          </div>
+        }
+      </div>
+
+      <!-- Visibilidad -->
+      <div class="form-control">
+        <label class="label cursor-pointer justify-start gap-3">
+          <input
+            type="checkbox"
+            formControlName="isPublic"
+            class="checkbox checkbox-primary"
+          />
+          <span class="label-text">Lista pública</span>
+        </label>
+        <div class="text-sm text-base-content/70 mt-1 ml-11">
+          Las listas públicas son visibles para todos los usuarios
+        </div>
+      </div>
+
+      <!-- Géneros -->
+      <div>
+        <label class="label-text mb-2">Géneros (opcional)</label>
+
+        @if (isLoadingGenres()) {
+          <div class="flex flex-wrap gap-2">
+            @for (i of [1,2,3,4,5,6]; track i) {
+              <div class="badge badge-outline h-8 w-20 animate-pulse bg-base-200 border-none"></div>
+            }
+          </div>
+        }
+
+        @if (!isLoadingGenres() && genres().length > 0) {
+          <div class="flex flex-wrap gap-2">
+            @for (genre of genres(); track genre.id) {
+              <button
+                type="button"
+                (click)="toggleGenre(genre.id)"
+                [ngClass]="{
+                  'badge badge-outline cursor-pointer transition-all': true,
+                  'badge-primary': isGenreSelected(genre.id),
+                  'hover:badge-primary/50': !isGenreSelected(genre.id)
+                }"
+              >
+                {{ genre.name }}
+              </button>
+            }
+          </div>
+          <div class="text-sm text-base-content/70 mt-2">
+            {{ listForm.get('genreIds')?.value?.length || 0 }} géneros seleccionados
+          </div>
+        }
+
+        @if (!isLoadingGenres() && genres().length === 0) {
+          <p class="text-sm text-base-content/70">No hay géneros disponibles</p>
+        }
+      </div>
+
+      <!-- Botones de acción -->
+      <div class="flex gap-4 mt-8">
+        <a
+          class="btn bg-secondary hover:bg-secondary/80"
+          routerLink="/user/lists"
+        >
+          Cancelar
+        </a>
+        <button
+          type="submit"
+          class="btn btn-primary"
+          [disabled]="isLoading()"
+        >
+          @if (isLoading()) {
+            <span class="loading loading-spinner"></span>
+          }
+          Actualizar lista
+        </button>
+      </div>
+    </form>
+  }
+
+  <!-- Estado: Lista no encontrada -->
+  @if (!isLoadingList() && !currentList()) {
+    <div class="alert alert-error shadow-lg">
+      <div>
+        <span>No se pudo cargar la lista. Puede que no exista o no tengas permisos para editarla.</span>
+      </div>
+      <a class="btn btn-sm btn-ghost" routerLink="/user/lists">Volver a mis listas</a>
+    </div>
+  }
+
+  <!-- Mensaje de éxito -->
+  @if (successMessage()) {
+    <div class="fixed bottom-4 right-4 z-50 max-w-sm">
+      <div class="alert alert-success shadow-lg animate-in slide-in-from-right">
+        <span>{{ successMessage() }}</span>
+      </div>
+    </div>
+  }
+</div>

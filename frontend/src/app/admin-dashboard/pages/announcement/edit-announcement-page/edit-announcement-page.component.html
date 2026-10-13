@@ -1,0 +1,113 @@
+<div class="max-w-3xl mx-auto p-4 sm:p-6 lg:p-8">
+  <h1 class="text-2xl font-bold mb-6">Editar anuncio</h1>
+
+  @if (isLoadingAnnouncement()) {
+    <div class="flex justify-center items-center py-12">
+      <span class="loading loading-spinner loading-lg"></span>
+      <span class="ml-2">Cargando anuncio...</span>
+    </div>
+  } @else {
+    <form [formGroup]="announcementForm" (ngSubmit)="onSubmit()" class="space-y-6">
+
+      @if(hasError()) {
+        <span class="text-sm text-error">
+          {{ errorMessages()[0] }}
+        </span>
+      }
+
+      <!-- Título del anuncio -->
+      <div>
+        <div class="flex justify-between items-center mb-1">
+          <label for="title" class="label-text">Título *</label>
+          @if (formUtils.isValidField(announcementForm, 'title')) {
+            <span class="text-sm text-error">
+              {{ formUtils.getFieldError(announcementForm, 'title') }}
+            </span>
+          }
+        </div>
+        <input
+          id="title"
+          type="text"
+          formControlName="title"
+          placeholder="Ingresa el título del anuncio"
+          class="input input-bordered w-full"
+          [class.input-error]="formUtils.isValidField(announcementForm, 'title')"
+        />
+      </div>
+
+      <!-- Contenido del anuncio -->
+      <div>
+        <div class="flex justify-between items-center mb-1">
+          <label for="content" class="label-text">Contenido *</label>
+          @if (formUtils.isValidField(announcementForm, 'content')) {
+            <span class="text-sm text-error">
+              {{ formUtils.getFieldError(announcementForm, 'content') }}
+            </span>
+          }
+        </div>
+        <textarea
+          id="content"
+          formControlName="content"
+          placeholder="Escribe el contenido del anuncio aquí..."
+          rows="6"
+          class="textarea textarea-bordered w-full"
+          [class.textarea-error]="formUtils.isValidField(announcementForm, 'content')"
+        ></textarea>
+        <div class="text-sm text-base-content/70 mt-1">
+          {{ announcementForm.get('content')?.value?.length || 0 }}/5000 caracteres
+        </div>
+      </div>
+
+      <!-- Opción para actualizar fecha -->
+      <div class="bg-base-200 p-4 rounded-lg">
+        <!-- Título -->
+        <div class="mb-3">
+          <h3 class="font-medium text-lg mb-1">Actualizar fecha del anuncio</h3>
+          <p class="text-sm text-base-content/70">
+            Si seleccionas esta opción, la fecha del anuncio se actualizará a la fecha y hora actual.
+            Si no la seleccionas, el anuncio conservará su fecha de creación original.
+          </p>
+        </div>
+
+        <!-- Checkbox -->
+        <label class="cursor-pointer label justify-start gap-3 p-0">
+          <input
+            type="checkbox"
+            formControlName="updateDate"
+            class="checkbox checkbox-primary"
+          />
+          <span class="label-text font-medium">Sí, actualizar fecha</span>
+        </label>
+      </div>
+
+      <!-- Botones de acción -->
+      <div class="flex gap-4 mt-8">
+        <a
+          class="btn bg-secondary hover:bg-secondary/80"
+          routerLink="/admin/announcements"
+        >
+          Cancelar
+        </a>
+        <button
+          type="submit"
+          class="btn btn-primary"
+          [disabled]="isLoading()"
+        >
+          @if (isLoading()) {
+            <span class="loading loading-spinner"></span>
+          }
+          Actualizar anuncio
+        </button>
+      </div>
+    </form>
+  }
+
+  <!-- Notificación de éxito -->
+  @if (successMessage()) {
+    <div class="fixed bottom-4 right-4 z-50 max-w-sm">
+      <div class="alert alert-success shadow-lg animate-in slide-in-from-right">
+        <span>{{ successMessage() }}</span>
+      </div>
+    </div>
+  }
+</div>

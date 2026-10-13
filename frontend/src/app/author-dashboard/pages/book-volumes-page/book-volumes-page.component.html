@@ -1,0 +1,232 @@
+<!-- book-volumes-page.component.html -->
+<div class="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8">
+
+  <!-- Header -->
+  <div class="mb-6">
+    <div class="flex items-center gap-2 text-sm text-base-content/60 mb-2">
+      <a [routerLink]="['/write/books']" class="hover:text-primary transition-colors">
+        <i-lucide [img]="arrowLeft"></i-lucide>
+        Volver a mis libros
+      </a>
+    </div>
+
+    <h1 class="text-2xl font-bold">Gestión de Volúmenes</h1>
+    <p class="text-base-content/60 mt-2">
+      Gestiona los volúmenes de tu libro
+    </p>
+  </div>
+
+  <!-- Botón para crear volumen -->
+  <div class="mb-6">
+    @if (!isCreating()) {
+      <button
+        (click)="startCreating()"
+        class="btn btn-primary gap-2"
+      >
+        <i-lucide [img]="plus"></i-lucide>
+        Nuevo Volumen
+      </button>
+    }
+  </div>
+
+  <!-- Formulario de creación -->
+  @if (isCreating()) {
+    <div class="card bg-base-200 shadow-xl mb-6">
+      <div class="card-body">
+        <h3 class="card-title">Crear Nuevo Volumen</h3>
+        <form [formGroup]="createVolumeForm" class="space-y-4">
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">Título del volumen</span>
+            </label>
+            <input
+              type="text"
+              formControlName="title"
+              class="input input-bordered w-full"
+              placeholder="Ej: Volumen 1 - El comienzo"
+            />
+          </div>
+
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">Orden</span>
+            </label>
+            <input
+              type="number"
+              formControlName="order"
+              class="input input-bordered w-full"
+              min="1"
+            />
+          </div>
+
+          <div class="card-actions justify-end">
+            <button
+              type="button"
+              (click)="cancelCreating()"
+              class="btn btn-ghost"
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              (click)="createVolume()"
+              class="btn btn-primary"
+              [disabled]="createVolumeForm.invalid"
+            >
+              Crear Volumen
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  <!-- Estado: Cargando -->
+  @if (volumesResource.isLoading()) {
+    <div class="space-y-4">
+      @for (i of [1,2,3]; track i) {
+        <div class="card bg-base-200 shadow-xl animate-pulse">
+          <div class="card-body">
+            <div class="h-6 bg-base-300 rounded w-3/4 mb-2"></div>
+            <div class="h-4 bg-base-300 rounded w-1/2"></div>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Estado: Error -->
+  @if (volumesResource.error() && !volumesResource.isLoading()) {
+    <div class="alert alert-error">
+      <span>Error al cargar los volúmenes</span>
+      <button class="btn btn-ghost btn-sm" (click)="volumesResource.reload()">
+        Reintentar
+      </button>
+    </div>
+  }
+
+  <!-- Estado: Sin volúmenes -->
+  @if (!volumesResource.isLoading() && !volumesResource.error() && volumesResource.value()?.length === 0) {
+    <div class="text-center py-12">
+      <i class="fas fa-inbox text-6xl text-base-content/20 mb-4"></i>
+      <h3 class="text-xl font-semibold mb-2">No hay volúmenes</h3>
+      <p class="text-base-content/60">
+        Crea tu primer volumen para comenzar a agregar capítulos.
+      </p>
+    </div>
+  }
+
+  <!-- Lista de volúmenes -->
+  @if (!volumesResource.isLoading() && !volumesResource.error() && volumesResource.value() && volumesResource.value()!.length > 0) {
+    <div class="space-y-4">
+      @for (volume of volumesResource.value(); track volume.id) {
+        <div class="card bg-base-200 shadow-xl" [class.opacity-60]="!volume.isActive">
+          <div class="card-body">
+            <!-- Modo edición -->
+            @if (isEditing() === volume.id) {
+              <form [formGroup]="editVolumeForm" class="space-y-4">
+                <div class="form-control">
+                  <label class="label">
+                    <span class="label-text">Título</span>
+                  </label>
+                  <input
+                    type="text"
+                    formControlName="title"
+                    class="input input-bordered w-full"
+                  />
+                </div>
+
+                <div class="form-control">
+                  <label class="label">
+                    <span class="label-text">Orden</span>
+                  </label>
+                  <input
+                    type="number"
+                    formControlName="order"
+                    class="input input-bordered w-full"
+                    min="1"
+                  />
+                </div>
+
+                <div class="card-actions justify-end">
+                  <button
+                    type="button"
+                    (click)="cancelEditing()"
+                    class="btn btn-ghost"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="button"
+                    (click)="updateVolume()"
+                    class="btn btn-primary"
+                    [disabled]="editVolumeForm.invalid"
+                  >
+                    Actualizar
+                  </button>
+                </div>
+              </form>
+            }
+            <!-- Modo visualización -->
+            @else {
+              <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div class="flex-1">
+                  <h3 class="card-title text-lg">{{ volume.title }}</h3>
+                  <div class="flex items-center gap-4 mt-2 text-sm text-base-content/60">
+                    <span>Orden: {{ volume.order }}</span>
+                    <span>Capítulos: {{ volume.chapterCount }}</span>
+                    <span [class]="volume.isActive ? 'badge badge-success badge-sm' : 'badge badge-error badge-sm'">
+                      {{ volume.isActive ? 'Activo' : 'Inactivo' }}
+                    </span>
+                  </div>
+                </div>
+
+                <div class="flex gap-2 flex-wrap">
+                  <!-- Ver capítulos -->
+                  <button
+                    (click)="viewChapters(volume.id)"
+                    class="btn btn-info btn-sm gap-2"
+                    [disabled]="!volume.isActive"
+                  >
+                    <i-lucide [img]="chapters"></i-lucide>
+                    Capítulos
+                  </button>
+
+                  <!-- Editar -->
+                  <button
+                    (click)="startEditing(volume)"
+                    class="btn btn-primary btn-sm gap-2"
+                  >
+                    <i-lucide [img]="edit"></i-lucide>
+
+                    Editar
+                  </button>
+
+                  <!-- Activar/Desactivar -->
+                  <button
+                    (click)="toggleVolumeActive(volume)"
+                    class="btn btn-sm gap-2"
+                    [class.btn-warning]="volume.isActive"
+                    [class.btn-success]="!volume.isActive"
+                    [disabled]="isToggling() === volume.id"
+                  >
+                    @if (isToggling() === volume.id) {
+                      <span class="loading loading-spinner loading-xs"></span>
+                    } @else {
+                      @if ( volume.isActive) {
+                        <i-lucide [img]="desactive"></i-lucide>
+                      } @else {
+                        <i-lucide [img]="active"></i-lucide>
+                      }
+                    }
+                    {{ volume.isActive ? 'Desactivar' : 'Activar' }}
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

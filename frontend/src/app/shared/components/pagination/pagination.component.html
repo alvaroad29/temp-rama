@@ -1,0 +1,79 @@
+<div class="join flex justify-center items-center my-4">
+  <!-- Flecha anterior -->
+  @if (hasPrev()) {
+    <button
+      class="join-item btn"
+      (click)="navigateToPage(activePage() - 1)"
+    >
+      &laquo;
+    </button>
+  }
+
+  <!-- Páginas: números o "..." -->
+  @for (item of getPagesList(); track $index) {
+    @if (item === '...left') {
+      <div class="dropdown dropdown-start">
+        <div tabindex="0" role="button" class="join-item btn">...</div>
+        <div tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-4 shadow">
+          <div class="flex gap-2">
+            <input
+              type="number"
+              class="input input-bordered w-full"
+              [(ngModel)]="customPage"
+              min="1"
+              [max]="pages()"
+              placeholder="Número de página"
+              (keydown.enter)="goToPage()"
+            >
+            <button
+              class="btn btn-primary"
+              (click)="goToPage(); $event.stopPropagation()"
+            >
+              Ir
+            </button>
+          </div>
+        </div>
+      </div>
+    } @else if (item === '...right') {
+      <div class="dropdown dropdown-end">
+        <div tabindex="0" role="button" class="join-item btn">...</div>
+        <div tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-4 shadow">
+          <div class="flex gap-2">
+            <input
+              type="number"
+              class="input input-bordered w-full"
+              [(ngModel)]="customPage"
+              min="1"
+              [max]="pages()"
+              placeholder="Número de página"
+              (keydown.enter)="goToPage()"
+            >
+            <button
+              class="btn btn-primary"
+              (click)="goToPage(); $event.stopPropagation()"
+            >
+              Ir
+            </button>
+          </div>
+        </div>
+      </div>
+    } @else {
+      <button
+        class="join-item btn"
+        [class.btn-primary]="item === activePage()"
+        (click)="navigateToPage(+item)"
+      >
+        {{ item }}
+      </button>
+    }
+  }
+
+  <!-- Flecha siguiente -->
+  @if (hasNext()) {
+    <button
+      class="join-item btn"
+      (click)="navigateToPage(activePage() + 1)"
+    >
+      &raquo;
+    </button>
+  }

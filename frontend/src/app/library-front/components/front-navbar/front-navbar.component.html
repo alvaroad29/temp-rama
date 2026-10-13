@@ -1,0 +1,253 @@
+<!-- front-navbar.component.html -->
+<nav
+  class="fixed w-full bg-base-300 text-base-content shadow-md transition-all duration-300 z-50"
+  [class.-translate-y-full]="isNavbarHidden"
+  [class.top-0]="!isNavbarHidden">
+
+  <!-- Desktop Navbar -->
+  <div class="hidden lg:flex items-center justify-between px-4 py-3 max-w-7xl mx-auto">
+    <!-- Logo y enlaces izquierda -->
+    <div class="flex items-center space-x-8">
+      <a routerLink="/" class="text-xl font-semibold">Online Reading App</a>
+
+      <div class="space-x-6 font-bold">
+        <a
+          routerLink="/library"
+          routerLinkActive="border-b-2 border-primary"
+          [routerLinkActiveOptions]="{ exact: true }">
+          Biblioteca
+        </a>
+        <a
+          routerLink="/lists"
+          routerLinkActive="border-b-2 border-primary"
+          class="hover:border-b-2 hover:border-primary">Listas</a>
+        <a
+          routerLink="/annoucement"
+          routerLinkActive="border-b-2 border-primary"
+          class="hover:border-b-2 hover:border-primary">Anuncios</a>
+        <a
+          routerLink="/write/home"
+          routerLinkActive="border-b-2 border-primary"
+          class="hover:border-b-2 hover:border-primary">Escribir</a>
+
+        @if ( authService.isAdmin() )
+        {
+          <a routerLink="/admin"
+            routerLinkActive="border-b-2 border-primary"
+            class="hover:border-b-2 hover:border-primary">Administracion</a>
+        }
+
+      </div>
+    </div>
+
+    <!-- Busqueda y usuario -->
+    <div class="flex items-center space-x-4">
+      <toggle-theme></toggle-theme>
+      <div class="relative">
+        <input
+          #searchInput
+          type="text"
+          placeholder="Buscar..."
+          class="border rounded-full py-1 px-4 text-sm focus:outline-none focus:ring-2 focus:text-primary"
+          (keyup.enter)="onSearch(searchInput.value)"
+          (keyup.escape)="searchInput.value = ''">
+      </div>
+
+      <div class="relative">
+        @if (authStatus() === 'authenticated' && currentUser()) {
+           <!-- Usuario logueado -->
+           <button
+            #userButton
+            (click)="toggleUserDropdown()"
+            class="flex items-center space-x-2 p-1 rounded-full hover:text-primary cursor-pointer">
+
+            @if (currentUser()?.imageUrl)
+            {
+              <div class="w-8 h-8 rounded-full bg-neutral-content overflow-hidden">
+                <img
+                  [src]="currentUser()?.imageUrl"
+                  class="w-full h-full object-cover"
+                  alt="Foto de perfil"
+                >
+              </div>
+            }@else
+            {
+              <div class="w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center text-sm font-semibold">
+                {{ currentUser()?.userName?.charAt(0) || currentUser()?.displayName?.charAt(0) || 'U' }}
+              </div>
+            }
+
+            <span class="text-sm hidden md:block">{{ currentUser()?.userName || currentUser()?.displayName }}</span>
+          </button>
+
+          @if (isUserDropdownOpen) {
+            <div
+              #userDropdown
+              class="absolute right-0 mt-2 w-48 bg-base-100 rounded-md shadow-lg py-1 z-50">
+
+              <div class="px-4 py-2 border-b border-base-300">
+                <p class="text-sm font-semibold">{{ currentUser()?.userName || currentUser()?.displayName }}</p>
+                <p class="text-xs text-gray-500">{{ currentUser()?.email }}</p>
+              </div>
+
+              <a
+                routerLink="/user/profile"
+                class="block px-4 py-2 text-sm hover:bg-base-300">
+                Mi Perfil
+              </a>
+
+              <!-- <a
+                routerLink="/settings"
+                class="block px-4 py-2 text-sm hover:bg-base-300">
+                Configuración
+              </a> -->
+
+              <div class="border-t border-base-300"></div>
+
+              <button
+                (click)="authService.logout(); isUserDropdownOpen = false"
+                class="block w-full text-left px-4 py-2 text-sm hover:bg-base-300 text-error cursor-pointer">
+                Cerrar sesión
+              </button>
+            </div>
+          }
+        }@else {
+            <!-- Usuario no logueado -->
+          <button
+            #userButton
+            (click)="toggleUserDropdown()"
+            class="p-1 rounded-full hover:hover:text-primary cursor-pointer">
+            <i-lucide [img]="user"></i-lucide>
+          </button>
+
+          @if (isUserDropdownOpen) {
+            <div #userDropdown class="absolute right-0 mt-2 w-48 bg-base-100 rounded-md shadow-lg py-1 z-50">
+              <a
+                routerLink="/auth/login"
+                class="block px-4 py-2 text-sm hover:bg-base-300">
+                Iniciar sesión
+              </a>
+            </div>
+          }
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile Navbar -->
+  <div class="lg:hidden flex items-center justify-between px-4 py-3">
+    <a routerLink="/" class="text-xl font-bold">Online Reading App</a>
+
+    <button
+      (click)="toggleMenu()"
+      class="p-1 rounded-md focus:outline-none"
+      [class.text-blue-600]="isMenuOpen">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+      </svg>
+    </button>
+  </div>
+
+  <!-- Mobile Menu -->
+  @if (isMenuOpen) {
+    <div
+      class="lg:hidden bg-base-100 shadow-lg absolute top-full left-0 right-0 z-40 max-h-[80vh] overflow-y-auto">
+      <div class="px-4 py-3 space-y-4">
+        <!-- Search Input -->
+        <div class="relative">
+          <input
+            type="text"
+            placeholder="Search"
+            class="w-full border rounded-full py-2 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+
+        <!-- Navigation Links -->
+        <div class="space-y-2 border-t pt-2">
+          <a
+            routerLink="/library"
+            class="block py-2 px-2 hover:bg-base-300 rounded"
+            (click)="isMenuOpen = false">Biblioteca</a>
+          <a
+            routerLink="/lists"
+            class="block py-2 px-2  hover:bg-base-300 rounded"
+            (click)="isMenuOpen = false">Listas</a>
+          <a
+            routerLink="/annoucement"
+            class="block py-2 px-2  hover:bg-base-300 rounded"
+            (click)="isMenuOpen = false">Anuncios</a>
+          <a
+            routerLink="/write/home"
+            class="block py-2 px-2  hover:bg-base-300 rounded"
+            (click)="isMenuOpen = false">Escribir</a>
+
+           @if ( authService.isAdmin() )
+          {
+            <a routerLink="/admin"
+              class="block py-2 px-2  hover:bg-base-300 rounded"
+              (click)="isMenuOpen = false">Administracion</a>
+          }
+        </div>
+
+
+        @if (authStatus() === 'authenticated') {
+          <div class="border-t pt-2 space-y-2">
+            <div class="flex items-center justify-between border-b border-base-300 pb-3">
+              <div class="flex items-center space-x-3">
+                <!-- Avatar con inicial -->
+
+                @if (currentUser()?.imageUrl)
+                {
+                  <div class="w-10 h-10 rounded-full bg-neutral-content overflow-hidden">
+                    <img
+                      [src]="currentUser()?.imageUrl"
+                      class="w-full h-full object-cover"
+                      alt="Foto de perfil"
+                    >
+                  </div>
+                }@else
+                {
+                  <div class="w-10 h-10 bg-primary text-white rounded-full flex items-center justify-center text-sm font-semibold">
+                    {{  currentUser()?.userName?.charAt(0) || currentUser()?.displayName?.charAt(0) || 'U' }}
+                  </div>
+                }
+
+
+
+                <!-- Información del usuario -->
+                <div>
+                  <p class="text-sm font-semibold">{{ currentUser()?.userName || currentUser()?.displayName }}</p>
+                  <p class="text-xs text-gray-500">{{ currentUser()?.email }}</p>
+                </div>
+              </div>
+
+              <!-- Toggle Theme -->
+              <div class="flex items-center">
+                <toggle-theme></toggle-theme>
+              </div>
+            </div>
+            <a
+              routerLink="/user/profile"
+              class="block py-2 px-2 hover:bg-base-300 rounded"
+              (click)="isMenuOpen = false">
+              Mi Perfil
+            </a>
+            <button
+              (click)="authService.logout(); isMenuOpen = false"
+              class="w-full text-left py-2 px-2 hover:bg-base-300 rounded text-error">
+              Cerrar sesión
+            </button>
+          </div>
+        } @else {
+          <div class="space-y-2">
+            <button
+              routerLink="/auth/login"
+              class="w-full bg-primary text-white py-2 px-4 rounded-md hover:bg-blue-700"
+              (click)="isMenuOpen = false">
+              Iniciar sesión
+            </button>
+          </div>
+        }
+      </div>
+    </div>
+  }
+</nav>

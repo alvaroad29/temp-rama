@@ -1,0 +1,31 @@
+/* reader-page.component.css */
+.markdown-content {
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  color: inherit;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.markdown-content * {
+  font-family: inherit !important;
+  font-size: inherit !important;
+  line-height: inherit !important;
+  color: inherit !important;
+
+}
+
+/* Transición suave para los cambios de contraste */
+.reader-container {
+  transition: background-color 0.3s ease;
+}
+
+::ng-deep .custom-markdown p {
+  margin-bottom: 0.6em !important;
+  margin-top: 0 !important;
+}
+
+::ng-deep .custom-markdown p:last-child {
+  margin-bottom: 0 !important;
+}

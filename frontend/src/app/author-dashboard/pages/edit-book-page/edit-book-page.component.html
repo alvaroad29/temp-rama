@@ -1,0 +1,239 @@
+<!-- edit-book-page.component.html -->
+<div class="max-w-3xl mx-auto p-4 sm:p-6 lg:p-8">
+
+  <!-- Estado: Cargando -->
+  @if (isLoading()) {
+    <div class="text-center py-12">
+      <span class="loading loading-spinner loading-lg"></span>
+      <p class="mt-4 text-base-content/60">Cargando libro...</p>
+    </div>
+  }
+
+  <!-- Estado: Error -->
+  @if (bookResource.error() && !isLoading()) {
+    <div class="alert alert-error">
+      <i class="fas fa-exclamation-triangle"></i>
+      <span>Error al cargar el libro</span>
+      <div class="mt-2">
+        <button class="btn btn-ghost btn-sm" (click)="bookResource.reload()">
+          Reintentar
+        </button>
+        <button class="btn btn-ghost btn-sm" (click)="router.navigate(['/write/books'])">
+          Volver a mis libros
+        </button>
+      </div>
+    </div>
+  }
+
+  <!-- Estado: Con datos -->
+  @if (book() && !isLoading()) {
+    <div class="mb-6">
+      <div class="flex items-center gap-2 text-sm text-base-content/60 mb-2">
+        <a [routerLink]="['/write/books']" class="hover:text-primary transition-colors">
+          <i class="fas fa-arrow-left mr-1"></i>
+          Volver a mis libros
+        </a>
+      </div>
+
+      <h1 class="text-2xl font-bold">Editar libro</h1>
+      <p class="text-base-content/60 mt-2">
+        Actualiza la información de tu libro
+      </p>
+    </div>
+
+    <form [formGroup]="bookForm" (ngSubmit)="onSubmit()" class="space-y-6">
+
+      <!-- Título del libro -->
+      <div>
+        <div class="flex justify-between items-center mb-1">
+          <label for="title" class="label-text">Título del libro</label>
+          @if (formUtils.isValidField(bookForm, 'title')) {
+            <span class="text-sm text-error">
+              {{ formUtils.getFieldError(bookForm, 'title') }}
+            </span>
+          }
+        </div>
+        <input
+          id="title"
+          type="text"
+          formControlName="title"
+          class="input input-bordered w-full"
+          [class.input-error]="formUtils.isValidField(bookForm, 'title')"
+          placeholder="El viaje del héroe"
+        />
+      </div>
+
+      <!-- Portada (archivo de imagen) -->
+      <div>
+        <label for="coverImage" class="label-text mb-1 block">Portada (opcional)</label>
+
+        <!-- Input para subir nueva portada -->
+        @if (!hasCover() && !isUploadingCover()) {
+          <input
+            id="coverImage"
+            type="file"
+            (change)="onCoverSelected($event)"
+            accept="image/*"
+            class="file-input file-input-bordered w-full"
+            [disabled]="isUploadingCover() || isSubmitting()"
+          />
+        }
+
+        <!-- Estado: Subiendo portada -->
+        @if (isUploadingCover() && cover) {
+          <div class="flex items-center gap-4 p-4 bg-base-200 rounded-lg">
+            <span class="loading loading-spinner loading-sm"></span>
+            <span class="text-sm">Subiendo portada...</span>
+          </div>
+        }
+
+        <!-- Vista previa de portada -->
+        @if (hasCover() && coverPreview()) {
+          <div class="flex items-center gap-4 mt-4">
+            <div class="relative">
+              <img
+                [src]="coverPreview()"
+                alt="Vista previa de portada"
+                class="w-32 h-48 object-cover rounded shadow"
+              />
+              <button
+                (click)="deleteCover()"
+                class="absolute -top-2 -right-2 bg-error text-error-content rounded-full p-1 w-6 h-6 flex items-center justify-center"
+                title="Eliminar portada"
+                type="button"
+                [disabled]="isUploadingCover() || isSubmitting()"
+              >
+                <i class="fas fa-times text-xs"></i>
+              </button>
+            </div>
+            <div>
+              <span class="text-sm text-success">✓ Portada cargada</span>
+              <p class="text-xs text-base-content/60 mt-1">
+                La portada se actualizará al guardar los cambios
+              </p>
+            </div>
+          </div>
+        }
+
+        <!-- Portada existente (si no se ha subido una nueva) -->
+        @if (book()?.imageUrl && !hasCover() && !coverPreview()) {
+          <div class="flex items-center gap-4 mt-4">
+            <div class="relative">
+              <img
+                [src]="book()?.imageUrl"
+                alt="Portada actual"
+                class="w-32 h-48 object-cover rounded shadow"
+              />
+              <button
+                (click)="deleteCover()"
+                class="absolute -top-2 -right-2 bg-error text-error-content rounded-full p-1 w-6 h-6 flex items-center justify-center"
+                title="Eliminar portada"
+                type="button"
+                [disabled]="isUploadingCover() || isSubmitting()"
+              >
+                <i class="fas fa-times text-xs"></i>
+              </button>
+            </div>
+            <div>
+              <span class="text-sm text-base-content/60">Portada actual</span>
+              <p class="text-xs text-base-content/60 mt-1">
+                Sube una nueva imagen para reemplazarla
+              </p>
+            </div>
+          </div>
+        }
+
+        <p class="text-xs text-base-content/60 mt-1">
+          Soporta: JPG, PNG, WEBP (máx. 2MB)
+        </p>
+      </div>
+
+      <!-- Descripción -->
+      <div>
+        <div class="flex justify-between items-center mb-1">
+          <label for="description" class="label-text">Descripción (máx. 4000 caracteres)</label>
+          @if (bookForm.get('description')?.invalid && bookForm.get('description')?.touched) {
+            <span class="text-sm text-error">
+              {{ bookForm.get('description')?.errors?.['maxlength'] ? 'Máximo 4000 caracteres' : '' }}
+            </span>
+          }
+        </div>
+        <textarea
+          id="description"
+          formControlName="description"
+          class="textarea textarea-bordered w-full"
+          rows="4"
+          maxlength="4000"
+          placeholder="Una breve descripción del libro..."
+        ></textarea>
+        <div class="text-right text-sm text-base-content/60 mt-1">
+          {{ bookForm.get('description')?.value?.length || 0 }}/4000
+        </div>
+      </div>
+
+      <!-- Estado -->
+      <div>
+        <label for="state" class="label-text mb-1 block">Estado del libro</label>
+        <select
+          id="state"
+          formControlName="state"
+          class="select select-bordered w-full"
+        >
+          @for (option of getStateOptions(); track option.value) {
+            <option [value]="option.value">{{ option.label }}</option>
+          }
+        </select>
+      </div>
+
+      <!-- Géneros -->
+      <div>
+        <label class="label-text mb-2 block">Géneros</label>
+        @if (formUtils.isValidField(bookForm, 'genres')) {
+          <div class="text-sm text-error mb-2">
+            {{ formUtils.getFieldError(bookForm, 'genres') }}
+          </div>
+        }
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-40 overflow-y-auto p-2 border border-base-300 rounded">
+          @for (genre of genres(); track genre.id) {
+            <label class="cursor-pointer flex items-center space-x-2 p-2 hover:bg-base-200 rounded">
+              <input
+                type="checkbox"
+                [value]="genre.id"
+                (change)="onGenreChange($event)"
+                [checked]="isGenreSelected(genre.id)"
+                class="checkbox checkbox-primary checkbox-sm"
+              />
+              <span class="text-sm">{{ genre.name }}</span>
+            </label>
+          }
+        </div>
+      </div>
+
+      <!-- Botones -->
+      <div class="mt-8 flex gap-4">
+        <button
+          type="button"
+          (click)="cancelEdit()"
+          class="btn btn-ghost"
+          [disabled]="isSubmitting()"
+        >
+          Cancelar
+        </button>
+        <button
+          type="submit"
+          [disabled]="bookForm.invalid || isSubmitting()"
+          class="btn btn-primary flex-1"
+        >
+          @if (isSubmitting()) {
+            <span class="loading loading-spinner loading-sm"></span>
+            Actualizando...
+          } @else if (bookForm.invalid) {
+            Completa todos los campos requeridos
+          } @else {
+            Actualizar Libro
+          }
+        </button>
+      </div>
+    </form>
+  }
+</div>

@@ -1,0 +1,26 @@
+
+<a
+  class="block rounded-xl overflow-hidden h-full relative cursor-pointer transition-all duration-300 hover:scale-98 hover:brightness-75"
+  [routerLink]="['/library', slide()?.id]"
+>
+  <!-- Imagen de fondo -->
+  <img [src]="slide()?.imageUrl" [alt]="slide()?.title"
+      class="w-full h-full object-cover object-center">
+
+
+  <div class="absolute bottom-0 left-0 right-0 h-2/3 bg-gradient-to-t from-black/90 to-transparent"></div>
+
+  <!-- Contenido-->
+  <div class="absolute inset-0 p-5 slide-content">
+    <article class="h-full flex flex-col justify-end">
+      <section class="grid grid-rows-1">
+        <section class="flex flex-col justify-center">
+          <h1 class="text-xl md:text-2xl font-bold text-white">{{slide()?.title}}</h1>
+          <!-- <p class="text-xl text-yellow-300">{{slide()?.percentage}}%</p>
+          <p class="badge bg-white/20 text-white">{{slide()?.status}}</p> -->
+          <p class="text-white">{{slide()?.description | slice:0:150}}</p>
+        </section>
+      </section>
+    </article>
+  </div>
+</a>

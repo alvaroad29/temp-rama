@@ -1,0 +1,104 @@
+@if (authStatus() === 'authenticated') {
+  <div class="w-full">
+    <!-- Botón para abrir modal -->
+    <button
+      (click)="openModal()"
+      class="w-full bg-primary hover:bg-primary/90 text-primary-content font-semibold py-3 px-6 rounded-lg transition-colors duration-200 shadow-md hover:shadow-lg cursor-pointer"
+    >
+      <!-- <i class="fas fa-plus mr-2"></i> -->
+      Agregar a lista
+    </button>
+
+    <!-- Modal -->
+    @if (isModalOpen()) {
+      <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" (click)="closeModal()">
+        <div class="bg-base-300 rounded-lg shadow-xl w-full max-w-md max-h-[80vh] overflow-hidden" (click)="$event.stopPropagation()">
+          <!-- Header -->
+          <div class="bg-primary text-primary-content p-4 text-center">
+            <h3 class="text-lg font-semibold">Agregar a lista</h3>
+          </div>
+
+          <!-- Contenido -->
+          <div class="p-4 overflow-y-auto max-h-96">
+            @if (listsResource.isLoading()) {
+              <div class="flex justify-center py-8">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              </div>
+            } @else if (listsResource.error()) {
+              <div class="text-red-500 text-center py-4">
+                Error al cargar las listas
+              </div>
+            } @else {
+              @if (listsResource.value() && listsResource.value()!.length > 0) {
+                <div class="space-y-3">
+                  @for (list of listsResource.value(); track list.id) {
+                    <label class="flex items-center space-x-3 p-2 hover:bg-base-200 rounded cursor-pointer">
+                      <input
+                        type="checkbox"
+                        [checked]="list.containsBook"
+                        (change)="onListToggle(list, $event)"
+                        class="h-4 w-4 text-primary rounded focus:ring-primary"
+                      />
+                      <div class="flex-1">
+                        <span class="text-sm font-medium">{{ list.title }}</span>
+                        <p class="text-xs">{{ list.bookCount }} libros</p>
+                      </div>
+                    </label>
+                  }
+                </div>
+              } @else {
+                <div class="text-center py-8">
+                  <i class="fas fa-inbox text-4xl mb-3"></i>
+                  <p>No tienes listas creadas</p>
+                </div>
+              }
+            }
+          </div>
+
+          <!-- Footer -->
+          <div class="border-t p-4">
+            <a
+              routerLink="/user/lists/new"
+              [queryParams]="{ returnUrl: router.url }"
+              class="block w-full text-center bg-secondary text-secondary-content hover:bg-secondary/90 font-medium py-2 px-4 rounded transition-colors duration-200"
+              (click)="closeModal()"
+            >
+              Crear nueva lista
+            </a>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+} @else {
+  <a
+    routerLink="/auth/login"
+    [queryParams]="{ returnUrl: router.url }"
+    class="block w-full bg-primary hover:bg-primary/80 font-semibold py-3 px-6 rounded-lg text-center transition-colors duration-200 shadow-md hover:shadow-lg"
+  >
+    <i class="fas fa-sign-in-alt mr-2"></i>
+    Iniciar sesión para guardar en lista
+  </a>
+}
+
+<!-- Contenedor de notificaciones -->
+<div class="fixed bottom-4 right-4 z-[100] space-y-2 max-w-sm w-full">
+  @for (notification of notifications(); track notification.id) {
+    <div
+      class="p-4 rounded-lg transition-all duration-300 transform"
+      [ngClass]="{
+        'bg-success text-success-content': notification.type === 'success',
+        'bg-error border-red-500 text-red-800': notification.type === 'error',
+        'bg-yellow-50 border-yellow-500 text-yellow-800': notification.type === 'warning',
+      }"
+    >
+      <div class="flex items-start justify-between">
+        <div class="flex items-center">
+
+          <span class="text-sm font-medium">{{ notification.message }}</span>
+        </div>
+
+      </div>
+    </div>
+  }
+</div>

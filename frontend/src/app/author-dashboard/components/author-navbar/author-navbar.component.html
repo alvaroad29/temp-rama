@@ -1,0 +1,122 @@
+<nav class="fixed top-0 left-0 right-0 bg-base-300 z-50 h-16">
+  <div class="flex items-center justify-between h-full px-4">
+    <!-- Logo y botón de menú -->
+    <div class="flex items-center space-x-4">
+      <button
+        (click)="onToggleSidebar()"
+        class="p-2 hover:text-primary hover:bg-gray-100 rounded-md transition-colors duration-200">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+        </svg>
+      </button>
+      <div class="flex items-center">
+        <a routerLink="/" class="text-xl font-semibold">Online Reading App</a>
+      </div>
+    </div>
+
+    <!-- Acciones del navbar -->
+    <div class="flex items-center space-x-4">
+      <!-- Buscar -->
+      <!-- <button class="p-2 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors duration-200">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+        </svg>
+      </button> -->
+
+      <!-- Notificaciones -->
+      <!-- <button class="p-2 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors duration-200">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-5 5v-5zM10.5 3.5A3.5 3.5 0 017 7v4a3 3 0 01-3 3H2l2-2v-1a5 5 0 0110 0v1l2 2H14a3 3 0 01-3-3V7a3.5 3.5 0 00-3.5-3.5z"></path>
+        </svg>
+      </button> -->
+
+      <!-- Pantalla completa -->
+      <!-- <button class="p-2 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors duration-200">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path>
+        </svg>
+      </button> -->
+
+      <!-- Usuario -->
+      <toggle-theme></toggle-theme>
+
+      <div class="relative">
+      @if (authStatus() === 'authenticated' && user()) {
+
+           <button
+            (click)="toggleUserDropdown()"
+            class="flex items-center space-x-2 p-1 rounded-full hover:text-primary cursor-pointer">
+
+            <div class="w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center text-sm font-semibold">
+              {{ user()?.displayName?.charAt(0) || user()?.userName?.charAt(0) || 'U' }}
+            </div>
+
+            <div>
+              <span class="text-sm hidden md:block">{{ user()?.userName || user()?.displayName }}</span>
+              <!-- <span class="text-xs hidden md:block">Administrador</span> -->
+            </div>
+
+          </button>
+
+          @if (isUserDropdownOpen) {
+            <div
+              class="absolute right-0 mt-2 w-48 bg-base-100 rounded-md shadow-lg py-1 z-50">
+
+              <div class="md:hidden px-4 py-2 border-b border-base-300">
+                <p class="text-sm font-semibold">{{ user()?.userName }}</p>
+              </div>
+
+              <a
+                routerLink="/user/profile"
+                class="block px-4 py-2 text-sm hover:bg-base-300">
+                Mi Perfil
+              </a>
+
+              <!-- <a
+                routerLink="/settings"
+                class="block px-4 py-2 text-sm hover:bg-base-300">
+                Configuración
+              </a> -->
+
+              <div class="border-t border-base-300"></div>
+
+              <button
+                (click)="authService.logout(); isUserDropdownOpen = false"
+                class="block w-full text-left px-4 py-2 text-sm hover:bg-base-300 text-error cursor-pointer">
+                Cerrar sesión
+              </button>
+            </div>
+          }
+        }@else {
+            <!-- Usuario no logueado -->
+          <button
+            (click)="toggleUserDropdown()"
+            class="p-1 rounded-full hover:hover:text-primary cursor-pointer">
+            <i-lucide [img]="userIcon"></i-lucide>
+          </button>
+
+          @if (isUserDropdownOpen) {
+            <div class="absolute right-0 mt-2 w-48 bg-base-100 rounded-md shadow-lg py-1 z-50">
+              <a
+                routerLink="/auth/login"
+                class="block px-4 py-2 text-sm hover:bg-base-300">
+                Iniciar sesión
+              </a>
+            </div>
+          }
+        }
+        </div>
+      <!-- <div class="flex items-center space-x-2">
+        <div class="w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center text-sm font-semibold">
+           <span class="text-sm font-medium"> {{  user()?.userName?.charAt(0) || user()?.displayName?.charAt(0) || 'U' }}</span>
+          </div>
+
+        <div class="hidden md:block">
+
+          <div class="text-sm font-medium">{{user()?.userName}}</div>
+          <div class="text-xs ">Administrador</div>
+        </div>
+      </div> -->
+    </div>
+  </div>
+</nav>

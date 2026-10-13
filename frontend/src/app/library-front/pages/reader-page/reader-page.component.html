@@ -1,0 +1,80 @@
+<!-- reader-page.component.html -->
+<div class="min-h-screen px-4 py-6 md:px-16 md:py-10 transition-colors duration-300"
+  [class]="containerClasses()">
+  <div class="max-w-4xl mx-auto">
+
+    <!-- Skeleton loader mientras carga -->
+    @if (chapterResource.isLoading()) {
+      <div class="space-y-6 animate-pulse">
+        <!-- Skeleton del título -->
+        <div class="text-center mb-8">
+          <div class="skeleton h-8 w-3/4 mx-auto mb-2"></div>
+          <div class="skeleton h-4 w-1/2 mx-auto"></div>
+        </div>
+
+        <!-- Skeleton del contenido - Líneas de texto -->
+        <div class="space-y-4">
+          <!-- Líneas largas -->
+          @for (i of [1,2,3,4,5,6,7,8,9,10]; track i) {
+            <div class="flex flex-col gap-2">
+              <div class="skeleton h-4 w-full"></div>
+              <div class="skeleton h-4 w-11/12"></div>
+              @if (i % 3 === 0) {
+                <div class="skeleton h-4 w-10/12"></div>
+              }
+            </div>
+          }
+
+          <!-- Espaciado entre párrafos -->
+          <div class="h-6"></div>
+
+          <!-- Más líneas -->
+          @for (i of [1,2,3,4,5,6,7,8]; track i) {
+            <div class="flex flex-col gap-2">
+              <div class="skeleton h-4 w-full"></div>
+              <div class="skeleton h-4 w-5/6"></div>
+              @if (i % 2 === 0) {
+                <div class="skeleton h-4 w-9/12"></div>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- Contenido real cuando está cargado -->
+    @if (!chapterResource.isLoading() && chapterResource.value()) {
+      <h1 class="text-2xl md:text-3xl font-bold mb-2 text-center">{{ chapterResource.value()?.title }}</h1>
+
+      <div class="space-y-6 leading-relaxed markdown-content"
+          (click)="onContentClick($event)"
+          [style.font-family]="font()"
+          [style.font-size.px]="textSize()"
+          [style.line-height.px]="lineHeight()">
+        <markdown
+          [data]="content()"
+          (ready)="onMarkdownReady()"
+          class="custom-markdown"
+        ></markdown>
+      </div>
+    }
+
+    <!-- Estado de error -->
+    @if (chapterResource.error() && !chapterResource.isLoading()) {
+      <div class="text-center py-12">
+        <div class="alert alert-error max-w-md mx-auto">
+          <span>Error al cargar el capítulo. Intenta nuevamente.</span>
+        </div>
+      </div>
+    }
+  </div>
+</div>
+
+<!-- Footer flotante -->
+@if (!chapterResource.isLoading() && chapterResource.value()) {
+    <reader-footer
+    [bookId]="bookId()"
+    [previousChapter]="chapterResource.value()?.previousChapterId"
+    [nextChapter]="chapterResource.value()?.nextChapterId"
+  ></reader-footer>
+}

@@ -1,0 +1,103 @@
+.swiper {
+  height: 400px;
+  width: 100%;
+}
+:host { /*para que solo se aplique a este carousel*/
+/* Slides normales */
+::ng-deep .swiper-slide {
+  filter: brightness(0.4); /* Oscurece las slides no centrales */
+  transition: all 0.3s ease;
+}
+
+
+/* Slide activa/central */
+::ng-deep .swiper-slide-active {
+  filter: brightness(1); /* Brillo normal para la slide central */
+}
+
+/* Texto en slides no centrales */
+::ng-deep .swiper-slide:not(.swiper-slide-active) .slide-content {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s;
+}
+
+/* Texto en slide central */
+
+::ng-deep .swiper-slide-active .slide-content {
+  opacity: 1;
+  visibility: visible;
+}
+}
+
+
+.swiper-button-next,
+.swiper-button-prev {
+  color: white;
+  background: black;
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+
+  &:after {
+    font-size: 18px;
+    font-weight: bold;
+  }
+
+  &:hover {
+    background: #007bff;
+    color: white;
+  }
+}
+
+.swiper-button-next {
+  right: 10px;
+}
+
+.swiper-button-prev {
+  left: 10px;
+}
+
+
+/* Personalización de paginación */
+.swiper-pagination {
+  bottom: 10px;
+
+  .swiper-pagination-bullet {
+    background: #007bff;
+    opacity: 0.3;
+    width: 12px;
+    height: 12px;
+
+    &.swiper-pagination-bullet-active {
+      opacity: 1;
+      transform: scale(1.2);
+    }
+  }
+}
+
+/* estilos de la fraccion que aparece en los sliders 1/2... 2/2...*/
+
+.swiper-pagination {
+  top: 20px !important;
+  bottom: auto !important;
+  left: 50% !important;          /* Centrado horizontal */
+  right: auto !important;
+  width: auto !important;
+  transform: translateX(-50%);   /* Centra perfectamente */
+  text-align: center;
+}
+
+.swiper-pagination-fraction {
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 500;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  display: inline-block;         /* Importante para el centrado */
+}

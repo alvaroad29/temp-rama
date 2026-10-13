@@ -1,0 +1,35 @@
+<section class="py-4">
+  <!-- Loading State -->
+  @if (isLoading()) {
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-4">
+      @for (i of [1,2,3,4,5,6,7,8]; track i) {
+        <div class="animate-pulse">
+          <div class="bg-gray-300 h-64 rounded-lg"></div>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Error State -->
+  @if (error() && !isLoading()) {
+    <div class="text-center py-8">
+      <p class="text-red-600">Error al cargar las actualizaciones recientes</p>
+    </div>
+  }
+
+  <!-- Data State -->
+  @if (!isLoading() && !error()) {
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-4 place-items-center md:place-items-stretch">
+      @for (book of recentBooks(); track book.id) {
+        <book-update-card [book]="book"></book-update-card>
+      }
+
+      <!-- Empty State -->
+      @if (recentBooks().length === 0) {
+        <div class="col-span-full text-center py-8">
+          <p >No hay actualizaciones recientes</p>
+        </div>
+      }
+    </div>
+  }
+</section>

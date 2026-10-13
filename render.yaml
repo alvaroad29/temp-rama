@@ -1,0 +1,36 @@
+# render.yaml
+services:
+  - type: web
+    name: online-library-api
+    env: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: free
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: ApplyMigrationsOnStartup
+        value: true
+      - key: DOTNET_RUNNING_IN_CONTAINER
+        value: true
+    healthCheckPath: /health
+    autoDeploy: true
+    pullRequestPreviewsEnabled: false
+
+  - type: static
+    name: online-library-app
+    buildCommand: |
+      cd frontend
+      npm ci
+      npm run build --configuration=production
+    publishPath: ./frontend/dist/online-library-app/browser
+    pullRequestPreviewsEnabled: false
+    envVars:
+      - key: NODE_ENV
+        value: production
+
+databases:
+  - name: online-library-db
+    plan: free
+    databaseName: booklistdb
+    ipAllowList: []

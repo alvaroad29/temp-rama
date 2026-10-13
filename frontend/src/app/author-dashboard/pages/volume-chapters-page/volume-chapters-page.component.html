@@ -1,0 +1,346 @@
+<!-- volume-chapters-page.component.html -->
+<div class="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8">
+
+  <!-- Header -->
+  <div class="mb-6">
+    <div class="flex items-center gap-2 text-sm text-base-content/60 mb-2">
+      <a (click)="goBackToVolumes()" class="hover:text-primary transition-colors cursor-pointer">
+        <i-lucide [img]="arrowLeft"></i-lucide>
+        Volver a volúmenes
+      </a>
+    </div>
+
+    <h1 class="text-2xl font-bold">Capítulos del Volumen</h1>
+    <p class="text-base-content/60 mt-2">
+      Gestiona los capítulos de este volumen
+    </p>
+  </div>
+
+  <!-- Botón para crear capítulo -->
+  <div class="mb-6">
+    @if (!isCreating()) {
+      <button
+        (click)="startCreating()"
+        class="btn btn-primary gap-2"
+      >
+        <i-lucide [img]="plus"></i-lucide>
+        Nuevo Capítulo
+      </button>
+    }
+  </div>
+
+  <!-- Formulario de creación - ACTUALIZADO con orden -->
+  @if (isCreating()) {
+    <div class="card bg-base-200 shadow-xl mb-6">
+      <div class="card-body">
+        <h3 class="card-title">Crear Nuevo Capítulo</h3>
+        <form [formGroup]="createChapterForm" class="space-y-4">
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">Título del capítulo</span>
+            </label>
+            <input
+              type="text"
+              formControlName="title"
+              class="input input-bordered w-full"
+              placeholder="Ej: Capítulo 1 - El comienzo"
+            />
+          </div>
+
+          <!-- Nuevo: Input de orden -->
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">Orden del capítulo</span>
+            </label>
+            <input
+              type="number"
+              formControlName="order"
+              class="input input-bordered w-full"
+              min="0"
+              placeholder="0"
+            />
+            <div class="label-text-alt text-base-content/60 mt-1">
+              Define la posición del capítulo en el volumen. Menor número = primero.
+            </div>
+          </div>
+
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">Contenido</span>
+              @if (isContentInvalid(createChapterForm)) {
+                <span class="label-text-alt text-error">
+                  {{ getContentError(createChapterForm) }}
+                </span>
+              }
+            </label>
+
+            <!-- Editor Markdown -->
+            <app-markdown-editor
+              [content]="createChapterForm.get('content')?.value"
+              (contentChanged)="onCreateChapterContentChange($event)"
+            ></app-markdown-editor>
+
+             <div class="flex justify-between items-center mt-1">
+              <span class="text-xs text-base-content/60">
+                @if (createChapterForm.get('content')?.value?.length < 500) {
+                  <span class="text-warning">Mínimo 500 caracteres</span>
+                } @else {
+                  <span>Longitud adecuada</span>
+                }
+              </span>
+              <span
+                class="text-sm"
+                [class.text-base-content]="createChapterForm.get('content')?.value?.length <= 20000"
+                [class.text-warning]="createChapterForm.get('content')?.value?.length > 18000 && createChapterForm.get('content')?.value?.length <= 20000"
+                [class.text-error]="createChapterForm.get('content')?.value?.length > 20000"
+              >
+                {{ createChapterForm.get('content')?.value?.length || 0 }}/20.000
+              </span>
+            </div>
+          </div>
+
+          <div class="card-actions justify-end">
+            <button
+              type="button"
+              (click)="cancelCreating()"
+              class="btn btn-ghost"
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              (click)="createChapter()"
+              class="btn btn-primary"
+              [disabled]="createChapterForm.invalid"
+            >
+              Crear Capítulo
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  <!-- Estado: Cargando -->
+  @if (chaptersResource.isLoading()) {
+    <div class="space-y-4">
+      @for (i of [1,2,3]; track i) {
+        <div class="card bg-base-200 shadow-xl animate-pulse">
+          <div class="card-body">
+            <div class="h-6 bg-base-300 rounded w-3/4 mb-2"></div>
+            <div class="h-4 bg-base-300 rounded w-1/2"></div>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Estado: Error -->
+  @if (chaptersResource.error() && !chaptersResource.isLoading()) {
+    <div class="alert alert-error">
+      <i class="fas fa-exclamation-triangle"></i>
+      <span>Error al cargar los capítulos</span>
+      <button class="btn btn-ghost btn-sm" (click)="chaptersResource.reload()">
+        Reintentar
+      </button>
+    </div>
+  }
+
+  <!-- Estado: Sin capítulos -->
+  @if (!chaptersResource.isLoading() && !chaptersResource.error() && chaptersResource.value()?.length === 0) {
+    <div class="text-center py-12">
+      <i class="fas fa-file-alt text-6xl text-base-content/20 mb-4"></i>
+      <h3 class="text-xl font-semibold mb-2">No hay capítulos</h3>
+      <p class="text-base-content/60">
+        Este volumen no tiene capítulos publicados.
+      </p>
+    </div>
+  }
+
+  <!-- Lista de capítulos -->
+  @if (!chaptersResource.isLoading() && !chaptersResource.error() && chaptersResource.value() && chaptersResource.value()!.length > 0) {
+    <div class="space-y-4">
+      @for (chapter of chaptersResource.value(); track chapter.id) {
+        <div class="card bg-base-200 shadow-xl hover:shadow-2xl transition-shadow" [class.opacity-60]="!chapter.isActive">
+          <div class="card-body">
+            <!-- Modo edición - ACTUALIZADO con orden -->
+            @if (isEditing() === chapter.id) {
+              <div class="card bg-base-200 shadow-xl mb-6">
+                <div class="card-body">
+                  <h3 class="card-title">Editando Capítulo</h3>
+
+                  @if (isLoadingChapter()) {
+                    <div class="text-center py-8">
+                      <span class="loading loading-spinner loading-lg"></span>
+                      <p class="mt-4 text-base-content/60">Cargando capítulo...</p>
+                    </div>
+                  } @else {
+                    <form [formGroup]="editChapterForm" class="space-y-4">
+                      <div class="form-control">
+                        <label class="label">
+                          <span class="label-text">Título</span>
+                        </label>
+                        <input
+                          type="text"
+                          formControlName="title"
+                          class="input input-bordered w-full"
+                        />
+                      </div>
+
+                      <!-- Nuevo: Input de orden en edición -->
+                      <div class="form-control">
+                        <label class="label">
+                          <span class="label-text">Orden del capítulo</span>
+                        </label>
+                        <input
+                          type="number"
+                          formControlName="order"
+                          class="input input-bordered w-full"
+                          min="0"
+                        />
+                        <div class="label-text-alt text-base-content/60 mt-1">
+                          Menor número = posición más temprana en el volumen.
+                        </div>
+                      </div>
+
+                      <div class="form-control">
+                        <label class="label">
+                          <span class="label-text">Contenido</span>
+                          @if (isContentInvalid(editChapterForm)) {
+                            <span class="label-text-alt text-error">
+                              {{ getContentError(editChapterForm) }}
+                            </span>
+                          }
+                        </label>
+
+                        <!-- Editor Markdown -->
+                        <app-markdown-editor
+                          [content]="editChapterForm.get('content')?.value"
+                          (contentChanged)="onEditChapterContentChange($event)"
+                        ></app-markdown-editor>
+
+                        <div class="flex justify-between items-center mt-1">
+                          <span class="text-xs text-base-content/60">
+                            @if (editChapterForm.get('content')?.value?.length < 500) {
+                              <span class="text-warning">Mínimo 500 caracteres</span>
+                            } @else {
+                              <span>Longitud adecuada</span>
+                            }
+                          </span>
+                          <span
+                            class="text-sm"
+                            [class.text-base-content]="editChapterForm.get('content')?.value?.length <= 20000"
+                            [class.text-warning]="editChapterForm.get('content')?.value?.length > 18000 && editChapterForm.get('content')?.value?.length <= 20000"
+                            [class.text-error]="editChapterForm.get('content')?.value?.length > 20000"
+                          >
+                            {{ editChapterForm.get('content')?.value?.length || 0 }}/20.000
+                          </span>
+                        </div>
+                      </div>
+
+                      <!-- Información adicional del capítulo -->
+                      @if (selectedChapter()) {
+                        <div class="bg-base-300 rounded-lg p-4 text-sm">
+                          <div class="grid grid-cols-2 gap-4">
+                            <div>
+                              <strong>ID:</strong> {{ selectedChapter()!.id }}
+                            </div>
+                            <div>
+                              <strong>Volumen ID:</strong> {{ selectedChapter()!.volumeId }}
+                            </div>
+                            <div>
+                              <strong>Estado:</strong>
+                              <span [class]="selectedChapter()!.isActive ? 'badge badge-success badge-sm ml-1' : 'badge badge-error badge-sm ml-1'">
+                                {{ selectedChapter()!.isActive ? 'Activo' : 'Inactivo' }}
+                              </span>
+                            </div>
+                            <div>
+                              <strong>Vistas:</strong> {{ selectedChapter()!.viewCount }}
+                            </div>
+                            <div>
+                              <strong>Publicado:</strong> {{ formatDate(selectedChapter()!.publishDate) }}
+                            </div>
+                            @if (selectedChapter()!.updateDate) {
+                              <div>
+                                <strong>Actualizado:</strong> {{ formatDate(selectedChapter()!.updateDate!) }}
+                              </div>
+                            }
+                          </div>
+                        </div>
+                      }
+
+                      <div class="card-actions justify-end">
+                        <button
+                          type="button"
+                          (click)="cancelEditing()"
+                          class="btn btn-ghost"
+                        >
+                          Cancelar
+                        </button>
+                        <button
+                          type="button"
+                          (click)="updateChapter()"
+                          class="btn btn-primary"
+                          [disabled]="editChapterForm.invalid"
+                        >
+                          Actualizar Capítulo
+                        </button>
+                      </div>
+                    </form>
+                  }
+                </div>
+              </div>
+            }
+            <!-- Modo visualización -->
+            @else {
+              <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div class="flex-1">
+                  <h3 class="card-title text-lg">{{ chapter.title }}</h3>
+                  <div class="flex items-center gap-4 mt-2 text-sm text-base-content/60">
+                    <span>Orden: {{ chapter.order }}</span>
+                    <span>Vistas: {{ chapter.viewCount }}</span>
+                    <span>Publicado: {{ formatDate(chapter.publishDate) }}</span>
+                    <span [class]="chapter.isActive ? 'badge badge-success badge-sm' : 'badge badge-error badge-sm'">
+                      {{ chapter.isActive ? 'Activo' : 'Inactivo' }}
+                    </span>
+                  </div>
+                </div>
+
+                <div class="flex gap-2 flex-wrap">
+                  <!-- Editar capítulo -->
+                  <button
+                    (click)="startEditing(chapter)"
+                    class="btn btn-primary btn-sm gap-2"
+                  >
+                    <i-lucide [img]="edit"></i-lucide>
+                    Editar
+                  </button>
+
+                  <!-- Activar/Desactivar -->
+                  <button
+                    (click)="toggleChapterActive(chapter)"
+                    class="btn btn-sm gap-2"
+                    [class.btn-warning]="chapter.isActive"
+                    [class.btn-success]="!chapter.isActive"
+                    [disabled]="isToggling() === chapter.id"
+                  >
+                    @if (isToggling() === chapter.id) {
+                      <span class="loading loading-spinner loading-xs"></span>
+                    } @else {
+                      @if ( chapter.isActive) {
+                        <i-lucide [img]="desactive"></i-lucide>
+                      } @else {
+                        <i-lucide [img]="active"></i-lucide>
+                      }
+                    }
+                    {{ chapter.isActive ? 'Desactivar' : 'Activar' }}
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

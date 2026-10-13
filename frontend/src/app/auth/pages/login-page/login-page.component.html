@@ -1,0 +1,79 @@
+<div class="text-center">
+  <h2 class="mt-6 text-3xl font-bold">Ingresar</h2>
+</div>
+
+<form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="mt-8 space-y-6">
+  @if( hasError() && !isBanned()) {
+    <span class="text-sm text-error">
+      Correo electrónico o contraseña incorrectos.
+    </span>
+  }
+
+  @if (isBanned()) {
+    <span class="text-sm text-error">
+      {{banMessage()}}
+    </span>
+  }
+  <!-- Email Field -->
+  <div>
+    <div class="flex justify-between items-center mb-1">
+      <label for="email" class="block text-sm font-medium">Email</label>
+      @if (formUtils.isValidField(loginForm, 'email')) {
+        <span class="text-sm text-error">
+          {{ formUtils.getFieldError(loginForm, 'email') }}
+        </span>
+      }
+
+    </div>
+    <input
+      id="email"
+      type="email"
+      formControlName="email"
+      placeholder="tumail@ejemplo.com"
+      class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-base-content/50 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary sm:text-sm bg-base-300"
+      [class.border-red-500]="formUtils.isValidField(loginForm, 'email')"
+    />
+  </div>
+
+  <!-- Password Field -->
+  <div>
+    <div class="flex justify-between items-center mb-1">
+      <label for="password" class="block text-sm font-medium">Contraseña</label>
+      <a href="#" class="text-sm placeholder-base-content/60  underline hover:text-primary-500 hover:text-primary">¿Olvidaste tu contraseña?</a>
+    </div>
+    <input
+      id="password"
+      type="password"
+      formControlName="password"
+      placeholder="contraseña"
+      class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-base-content/60 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary sm:text-sm bg-base-300"
+      [class.border-red-500]="formUtils.isValidField(loginForm, 'password')"
+    />
+    @if (formUtils.isValidField(loginForm, 'password')) {
+      <p class="mt-1 text-sm text-error">
+        {{ formUtils.getFieldError(loginForm, 'password') }}
+      </p>
+    }
+  </div>
+
+  <!-- Submit Button -->
+  <div>
+    <button
+      type="submit"
+      class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md bg-primary hover:bg-primary/80 cursor-pointer"
+      [disabled]="loginForm.invalid"
+      [disabled]="isLoading()"
+    >
+      @if (isLoading()) {
+        <span class="loading loading-spinner"></span>
+      }
+      Ingresar
+    </button>
+  </div>
+</form>
+
+<p class="text-center">
+¿No tenes cuenta?
+<a routerLink="/auth/register" class="text-info hover:underline">Registrate</a>
+</p>
+

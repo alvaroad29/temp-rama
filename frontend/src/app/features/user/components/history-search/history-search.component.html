@@ -1,0 +1,66 @@
+<form [formGroup]="searchForm" (ngSubmit)="onSubmit()" class="space-y-4 my-4">
+  <!-- Búsqueda por título -->
+  <div class="flex flex-col gap-2">
+    <div class="relative">
+      <i-lucide [img]="searchIcon" class="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400"></i-lucide>
+      <input
+        type="text"
+        formControlName="bookTitle"
+        placeholder="Buscar por título de libro..."
+        class="input input-bordered w-full pl-10"
+      >
+    </div>
+  </div>
+
+
+  <div class="flex flex-col gap-4">
+    <!-- Etiqueta de fecha -->
+    <div class="flex items-center gap-2">
+      <i-lucide [img]="calendar" class="h-4 w-4 text-gray-400 flex-shrink-0"></i-lucide>
+      <span class="text-sm font-medium whitespace-nowrap">Rango de fechas:</span>
+    </div>
+
+
+    <div class="flex flex-col gap-3 md:flex-row md:items-center md:gap-4">
+      <!-- Fecha desde -->
+      <div class="flex flex-col gap-1 w-full md:flex-row md:items-center md:w-auto">
+        <label class="text-sm text-gray-600 whitespace-nowrap md:w-16">Desde:</label>
+        <input
+          type="date"
+          formControlName="fromDate"
+          class="input input-bordered w-full md:w-40"
+        >
+      </div>
+
+      <!-- Fecha hasta -->
+      <div class="flex flex-col gap-1 w-full md:flex-row md:items-center md:w-auto">
+        <label class="text-sm text-gray-600 whitespace-nowrap md:w-16">Hasta:</label>
+        <input
+          type="date"
+          formControlName="toDate"
+          class="input input-bordered w-full md:w-40"
+        >
+      </div>
+    </div>
+  </div>
+
+
+  <div class="flex flex-col gap-2 sm:flex-row sm:gap-2">
+    <button
+      type="submit"
+      class="btn btn-primary order-1 sm:flex-1"
+    >
+      <span class="sm:hidden">Buscar historial</span>
+      <span class="hidden sm:inline">Buscar</span>
+    </button>
+    <button
+      type="button"
+      (click)="clearFilters()"
+      class="btn btn-outline order-2 sm:flex-1"
+      [disabled]="!searchForm.dirty"
+    >
+      <span class="sm:hidden">Limpiar filtros</span>
+      <span class="hidden sm:inline">Limpiar</span>
+    </button>
+  </div>
+</form>

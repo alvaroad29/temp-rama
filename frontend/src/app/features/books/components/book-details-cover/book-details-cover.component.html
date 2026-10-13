@@ -1,0 +1,134 @@
+<div class="bg-base-300 p-4 rounded-lg">
+
+  <!-- Layout escritorio -->
+  <div class="hidden md:flex gap-6">
+    <!-- Portada -->
+    <div class="flex-shrink-0">
+      <img [src]="book()?.imageUrl" [alt]="book()?.title" class="w-56 rounded shadow-lg" />
+    </div>
+
+    <!-- Detalles -->
+    <div class="flex flex-col flex-1 gap-4">
+
+      <!-- Título -->
+      <h1 class="text-3xl font-bold">{{ book()?.title }}</h1>
+      <p class="text-sm ">
+        Autor: <span class="">{{ book()?.author?.displayName }}</span>
+      </p>
+
+      <!-- Componente de Rating -->
+     <app-book-rating
+      [bookId]="book()!.id"
+      [bookScore]="displayScore()"
+      [totalRatings]="displayTotalRatings()"
+      (ratingChanged)="onRatingChanged($event)"
+    >
+    </app-book-rating>
+
+     <!-- Stats -->
+    <div class="flex flex-row text-center text-sm pb-2">
+      <div class="flex flex-col items-center pr-4 border-r border-gray-700">
+        <div class="text-xs">Capitulos</div>
+        <span class="font-semibold"> {{ book()?.chapterCount }}</span>
+      </div>
+      <div class="flex flex-col items-center px-4 border-r border-gray-700">
+        <div class=" text-xs">Vistas</div>
+        <span class="font-semibold">👁 {{ book()?.viewCount }}</span>
+      </div>
+      <!-- <div class="flex flex-col items-center px-4 border-r border-gray-700">
+        <div class=" text-xs">Bookmarked</div>
+        <span class="font-semibold">🔖 12.5K</span>
+      </div> -->
+      <div class="flex flex-col items-center px-4">
+        <div class=" text-xs">Estado</div>
+        <span class="text-accent font-semibold">{{ getStatus(book()!.state) }}</span>
+      </div>
+    </div>
+
+      <!-- Géneros -->
+      <div>
+        <span class="block  text-xs">Generos</span>
+        <div class="flex flex-wrap gap-2 mt-1">
+          @if (book()?.genres)
+          {
+            @for (genre of book()?.genres; track genre) {
+              <span class="bg-primary text-primary-content px-3 py-1 rounded text-xs font-semibold">{{ genre.name }}</span>
+            }
+          } @else {
+            <span class="">Sin generos</span>
+          }
+        </div>
+      </div>
+
+      <!-- Botones -->
+      <!-- <div class="flex gap-2 mt-2">
+        <button class="flex-1 bg-primary hover:bg-primary/80 py-2 rounded font-semibold">
+          Empezar a leer
+        </button>
+        <button class="flex-1 bg-primary hover:bg-primary/80 py-2 rounded font-semibold">
+          Agregar a lista
+        </button>
+      </div> -->
+    </div>
+  </div>
+
+  <!-- Layout móvil -->
+  <div class="flex flex-col md:hidden gap-4 items-center">
+
+    <img [src]="book()?.imageUrl" [alt]="book()?.title" class="w-48 rounded shadow-lg" />
+
+    <h1 class="text-2xl font-bold text-center">{{ book()?.title }}</h1>
+    <p class="text-sm text-center">
+      Autor: <span class="">{{ book()?.author?.displayName }}</span>
+    </p>
+
+    <!-- Componente de Rating para móvil -->
+    <div class="w-full">
+      <app-book-rating
+        [bookId]="book()!.id"
+        [bookScore]="displayScore()"
+        [totalRatings]="displayTotalRatings()"
+        (ratingChanged)="onRatingChanged($event)"
+      >
+      </app-book-rating>
+    </div>
+
+    <!-- Botones -->
+    <!-- <div class="grid grid-cols-2 gap-2 w-full">
+      <button class="bg-primary hover:bg-primary/80 py-2 rounded font-semibold">
+        Empezar a leer
+      </button>
+      <button class="bg-primary hover:bg-primary/80 py-2 rounded font-semibold">
+        Agregar a lista
+      </button>
+    </div> -->
+
+    <!-- Stats -->
+    <div class="grid grid-cols-2 gap-2 w-full text-center text-sm">
+      <div class=" rounded p-2">
+         {{ book()?.chapterCount }} <div class="text-gray-400 text-xs">Capitulos</div>
+      </div>
+      <div class=" rounded p-2">
+        👁  {{ book()?.viewCount }}<div class="text-gray-400 text-xs">Vistas</div>
+      </div>
+      <!-- <div class=" rounded p-2">
+        🔖 12.5K <div class="text-gray-400 text-xs">Bookmarked</div>
+      </div> -->
+      <div class=" rounded p-2">
+        <span class="text-red-400">Estado</span>
+        <div class="text-accent text-xs">{{ getStatus(book()!.state) }}</div>
+      </div>
+    </div>
+
+    <!-- Géneros -->
+    <div class="text-center">
+      <span class="block text-xs tracking-widest">Generos</span>
+      <div class="flex flex-wrap justify-center gap-2 mt-1">
+        @for (genre of book()?.genres; track genre) {
+          <span class="bg-primary text-primary-content px-3 py-1 rounded text-xs font-semibold">{{ genre.name }}</span>
+        }
+      </div>
+    </div>
+  </div>
+
+</div>

@@ -1,0 +1,279 @@
+<!-- admin-reports-page.component.html -->
+<div class="min-h-screen bg-base-100 py-6 px-4 sm:px-6 lg:px-8">
+  <div class="max-w-7xl mx-auto">
+
+    <!-- Header -->
+    <div class="mb-8">
+      <h1 class="text-3xl font-bold text-base-content mb-2">Administrar Reportes</h1>
+      <p class="text-base-content/60">
+        Gestiona los reportes de problemas enviados por los usuarios
+      </p>
+    </div>
+
+    <!-- Resumen -->
+
+      <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-6">
+        <div class="stat bg-base-200 rounded-lg">
+          <div class="stat-figure text-primary">
+            <i class="fas fa-flag text-2xl"></i>
+          </div>
+          <div class="stat-title">Total Reportes</div>
+          <div class="stat-value text-primary">{{ summaryResource.value()!.totalReports }}</div>
+        </div>
+
+        <div class="stat bg-base-200 rounded-lg">
+          <div class="stat-figure text-warning">
+            <i class="fas fa-clock text-2xl"></i>
+          </div>
+          <div class="stat-title">Pendientes</div>
+          <div class="stat-value text-warning">{{ summaryResource.value()!.pendingReports }}</div>
+        </div>
+
+        <div class="stat bg-base-200 rounded-lg">
+          <div class="stat-figure text-info">
+            <i class="fas fa-search text-2xl"></i>
+          </div>
+          <div class="stat-title">En Revisión</div>
+          <div class="stat-value text-info">{{ summaryResource.value()!.inReviewReports }}</div>
+        </div>
+
+        <div class="stat bg-base-200 rounded-lg">
+          <div class="stat-figure text-success">
+            <i class="fas fa-check text-2xl"></i>
+          </div>
+          <div class="stat-title">Resueltos</div>
+          <div class="stat-value text-success">{{ summaryResource.value()!.resolvedReports }}</div>
+        </div>
+      </div>
+
+
+    <!-- Filtros -->
+    <div class="card bg-base-200 shadow-xl mb-6">
+      <div class="card-body">
+        <div class="flex flex-col sm:flex-row gap-4 items-center">
+          <div class="form-control flex-1">
+            <label class="label cursor-pointer gap-4">
+              <input
+                type="radio"
+                name="filter"
+                class="radio radio-primary"
+                [checked]="currentFilter() === 'pending'"
+                (change)="setFilter('pending')"
+              />
+              <span class="label-text font-semibold">Pendientes</span>
+            </label>
+          </div>
+          <div class="form-control flex-1">
+            <label class="label cursor-pointer gap-4">
+              <input
+                type="radio"
+                name="filter"
+                class="radio radio-primary"
+                [checked]="currentFilter() === 'all'"
+                (change)="setFilter('all')"
+              />
+              <span class="label-text font-semibold">Todos</span>
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Estado: Cargando -->
+    @if (reportsResource.isLoading()) {
+      <div class="space-y-4">
+        @for (i of [1,2,3]; track i) {
+          <div class="card bg-base-200 shadow-xl animate-pulse">
+            <div class="card-body">
+              <div class="flex flex-col md:flex-row gap-4">
+                <div class="w-32 h-20 bg-base-300 rounded-lg mx-auto md:mx-0"></div>
+                <div class="flex-1 space-y-3">
+                  <div class="h-6 bg-base-300 rounded w-3/4"></div>
+                  <div class="h-4 bg-base-300 rounded w-full"></div>
+                  <div class="h-4 bg-base-300 rounded w-2/3"></div>
+                  <div class="flex gap-2">
+                    <div class="h-6 bg-base-300 rounded w-20"></div>
+                    <div class="h-6 bg-base-300 rounded w-24"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Estado: Error -->
+    @if (reportsResource.error() && !reportsResource.isLoading()) {
+      <div class="alert alert-error shadow-lg">
+        <div>
+          <i class="fas fa-exclamation-triangle"></i>
+          <span>Error al cargar los reportes. Intenta nuevamente.</span>
+        </div>
+        <button class="btn btn-ghost btn-sm" (click)="reloadReports()">
+          Reintentar
+        </button>
+      </div>
+    }
+
+    <!-- Estado: Sin reportes -->
+    @if (!reportsResource.isLoading() && !reportsResource.error() && filteredReports()!.length === 0) {
+      <div class="text-center py-12">
+        <div class="max-w-md mx-auto">
+          <i class="fas fa-flag text-6xl text-base-content/20 mb-4"></i>
+          <h3 class="text-xl font-semibold mb-2">
+            {{ currentFilter() === 'pending' ? 'No hay reportes pendientes' : 'No hay reportes' }}
+          </h3>
+          <p class="text-base-content/60">
+            {{ currentFilter() === 'pending' ? 'Todos los reportes han sido revisados.' : 'No se encontraron reportes.' }}
+          </p>
+        </div>
+      </div>
+    }
+
+    <!-- Lista de reportes -->
+    @if (!reportsResource.isLoading() && !reportsResource.error() && filteredReports()!.length > 0) {
+      <div class="space-y-6">
+        @for (report of filteredReports(); track report.id) {
+          <div class="card bg-base-200 shadow-xl hover:shadow-2xl transition-shadow duration-300">
+            <div class="card-body">
+              <div class="flex flex-col lg:flex-row gap-6">
+
+                <!-- Información del reporte -->
+                <div class="flex-1">
+                  <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
+                    <div class="flex-1">
+                      <h3 class="card-title text-xl mb-2">{{ report.title }}</h3>
+                      <p class="text-base-content/70 mb-3">
+                        {{ report.description }}
+                      </p>
+
+                      <!-- Información del usuario y libro -->
+                      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-3">
+                        <div>
+                          <div class="flex items-center gap-2 mb-1">
+                            <i class="fas fa-user text-base-content/50"></i>
+                            <span class="text-sm">
+                              Reportado por: <strong>{{ report.reporterName }}</strong>
+                            </span>
+                          </div>
+                          <div class="flex items-center gap-2">
+                            <i class="fas fa-envelope text-base-content/50"></i>
+                            <span class="text-sm">{{ report.reporterEmail }}</span>
+                          </div>
+                        </div>
+                        <div>
+                          <div class="flex items-center gap-2 mb-1">
+                            <i class="fas fa-book text-base-content/50"></i>
+                            <span class="text-sm">
+                              Libro:
+                              <button
+                                class="link link-primary text-sm"
+                                (click)="viewBookDetails(report.bookId)"
+                              >
+                                {{ report.bookTitle }}
+                              </button>
+                            </span>
+                          </div>
+                          @if (report.bookImageUrl) {
+                            <img
+                              [src]="report.bookImageUrl"
+                              [alt]="report.bookTitle"
+                              class="w-12 h-16 object-cover rounded mt-1"
+                            />
+                          }
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Estado y tipo -->
+                    <div class="flex-shrink-0 space-y-2">
+                      <div [class]="getStatusBadgeClass(report.status)">
+                        {{ getStatusText(report.status) }}
+                      </div>
+                      <div [class]="getTypeBadgeClass(report.reportType)">
+                        {{ getTypeText(report.reportType) }}
+                      </div>
+                      <div class="text-xs text-base-content/50 text-right">
+                        {{ formatDate(report.creationDate) }}
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Notas anteriores -->
+                  @if (report.adminNotes) {
+                    <div class="mb-4 p-3 bg-base-300 rounded-lg">
+                      <div class="flex items-center gap-2 mb-1">
+                        <i class="fas fa-comment text-info"></i>
+                        <span class="font-semibold">Notas anteriores:</span>
+                      </div>
+                      <p class="text-sm text-base-content/80">{{ report.adminNotes }}</p>
+                      @if (report.reviewedByAdminName) {
+                        <div class="text-xs text-base-content/50 mt-1">
+                          Por: {{ report.reviewedByAdminName }} • {{ formatDate(report.reviewedAt!) }}
+                        </div>
+                      }
+                    </div>
+                  }
+                </div>
+
+
+                  <div class="lg:w-80 flex-shrink-0">
+                    <div class="card bg-base-300 shadow-lg">
+                      <div class="card-body">
+                        <h4 class="card-title text-lg">Acciones</h4>
+
+                        <!-- Formulario de decisión -->
+                        <div class="space-y-4">
+                          <div class="form-control">
+                            <label class="label">
+                              <span class="label-text font-semibold">Estado</span>
+                            </label>
+                            <select
+                              class="select select-bordered w-full"
+                              [(ngModel)]="reportDecisions[report.id]"
+                            >
+                              <option [value]="ReportStatusEnum.EnRevision">En Revisión</option>
+                              <option [value]="ReportStatusEnum.Resuelto">Resolver</option>
+                            </select>
+                          </div>
+
+                          <div class="form-control">
+                            <label class="label">
+                              <span class="label-text font-semibold">Notas (opcional)</span>
+                            </label>
+                            <textarea
+                              class="textarea textarea-bordered w-full h-24"
+                              placeholder="Notas internas sobre el reporte..."
+                              [(ngModel)]="reportNotes[report.id]"
+                            ></textarea>
+                          </div>
+
+                          <div class="card-actions">
+                            <button
+                              class="btn btn-primary btn-sm flex-1 gap-2"
+                              (click)="updateReportStatus(report)"
+                              [disabled]="isUpdatingReport(report.id)"
+                            >
+                              @if (isUpdatingReport(report.id)) {
+                                <span class="loading loading-spinner loading-sm"></span>
+                                Procesando...
+                              } @else {
+                                <i class="fas fa-check"></i>
+                                Aplicar Cambios
+                              }
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>

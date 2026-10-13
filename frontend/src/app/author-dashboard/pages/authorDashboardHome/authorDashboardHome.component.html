@@ -1,0 +1,399 @@
+<div class="min-h-screen bg-base-100 py-6 px-4 sm:px-6 lg:px-8">
+  <div class="max-w-7xl mx-auto">
+
+    <!-- Header -->
+    <div class="mb-8">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 class="text-3xl font-bold text-base-content mb-2">Mi Dashboard de Autor</h1>
+          <p class="text-base-content/60">
+            Resumen de tu actividad y rendimiento como autor
+          </p>
+        </div>
+        <div class="flex gap-2">
+          <button
+            (click)="reload()"
+            class="btn btn-ghost gap-2"
+            [disabled]="isLoading()"
+          >
+            <i class="fas fa-sync-alt" [class.animate-spin]="isLoading()"></i>
+            Actualizar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Estado: Cargando -->
+    @if (isLoading()) {
+      <div class="space-y-6">
+        <!-- Skeletons para las tarjetas -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          @for (i of [1,2,3,4]; track i) {
+            <div class="card bg-base-200 shadow-xl animate-pulse">
+              <div class="card-body">
+                <div class="flex items-center gap-4">
+                  <div class="w-12 h-12 bg-base-300 rounded-full"></div>
+                  <div class="flex-1 space-y-2">
+                    <div class="h-4 bg-base-300 rounded w-3/4"></div>
+                    <div class="h-6 bg-base-300 rounded w-1/2"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- Estado: Error -->
+    @if (error() && !isLoading()) {
+      <!-- <div class="alert alert-error shadow-lg">
+        <div>
+          <i class="fas fa-exclamation-triangle"></i>
+          <span>{{ error() }}</span>
+        </div>
+        <button class="btn btn-ghost btn-sm" (click)="reload()">
+          Reintentar
+        </button>
+      </div> -->
+      <div class="card bg-base-200 shadow-xl">
+        <div class="card-body text-center py-12">
+          <div class="max-w-md mx-auto">
+            <i class="fas fa-book-open text-6xl text-base-content/20 mb-4"></i>
+            <h3 class="text-xl font-semibold mb-2">¡Bienvenido a tu dashboard!</h3>
+            <p class="text-base-content/60 mb-6">
+              Comienza tu viaje como autor creando tu primer libro
+            </p>
+            <button class="btn btn-primary gap-2" routerLink="/write/books/new">
+              <i class="fas fa-plus"></i>
+              Crear Mi Primer Libro
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Estado: Sin datos (primer uso) -->
+    @if (statistics() && statistics()!.totalBooks === 0 && !isLoading()) {
+      <div class="card bg-base-200 shadow-xl">
+        <div class="card-body text-center py-12">
+          <div class="max-w-md mx-auto">
+            <i class="fas fa-book-open text-6xl text-base-content/20 mb-4"></i>
+            <h3 class="text-xl font-semibold mb-2">¡Bienvenido a tu dashboard!</h3>
+            <p class="text-base-content/60 mb-6">
+              Comienza tu viaje como autor creando tu primer libro
+            </p>
+            <button class="btn btn-primary gap-2" routerLink="/write/books/new">
+              <i class="fas fa-plus"></i>
+              Crear Mi Primer Libro
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Estado: Con datos -->
+    @if (statistics() && statistics()!.totalBooks > 0 && !isLoading()) {
+      @let stats = statistics()!;
+
+      <!-- Tarjetas de Métricas Principales -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <!-- Mis Libros -->
+        <div class="card bg-base-200 shadow-xl hover:shadow-2xl transition-shadow cursor-pointer" routerLink="/write/books">
+          <div class="card-body">
+            <div class="flex items-center gap-4">
+              <!-- <div class="rounded-full bg-primary/10 p-3">
+
+              </div> -->
+              <div class="flex-1">
+                <h3 class="card-title text-lg">Mis Libros</h3>
+                <div class="text-3xl font-bold text-primary">{{ formatNumber(stats.totalBooks) }}</div>
+                <div class="flex flex-wrap gap-1 mt-2">
+                  <span class="badge badge-success badge-sm whitespace-nowrap">{{ stats.activeBooks }} activos</span>
+                  <span class="badge badge-info badge-sm whitespace-nowrap">{{ stats.completedBooks }} completados</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Vistas Totales -->
+        <div class="card bg-base-200 shadow-xl hover:shadow-2xl transition-shadow">
+          <div class="card-body">
+            <div class="flex items-center gap-4">
+              <!-- <div class="rounded-full bg-secondary/10 p-3">
+                <i class="fas fa-eye text-2xl text-secondary"></i>
+              </div> -->
+              <div class="flex-1">
+                <h3 class="card-title text-lg">Vistas Totales</h3>
+                <div class="text-3xl font-bold text-secondary">{{ formatNumber(stats.totalViews) }}</div>
+                <div class="flex flex-wrap gap-1 mt-2">
+                  <span class="badge badge-info badge-sm whitespace-nowrap">{{ formatNumber(stats.viewsThisWeek) }} esta semana</span>
+                  <span class="badge badge-success badge-sm whitespace-nowrap">{{ formatNumber(stats.viewsThisMonth) }} este mes</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Calificaciones -->
+        <div class="card bg-base-200 shadow-xl hover:shadow-2xl transition-shadow">
+          <div class="card-body">
+            <div class="flex items-center gap-4">
+              <!-- <div class="rounded-full bg-warning/10 p-3">
+                <i class="fas fa-star text-2xl text-warning"></i>
+              </div> -->
+              <div class="flex-1">
+                <h3 class="card-title text-lg">Calificación</h3>
+                <div class="text-3xl font-bold text-warning">{{ formatRating(stats.averageRating) }}/5</div>
+                <div class="flex flex-wrap gap-1 mt-2">
+                  <span class="badge badge-warning badge-sm whitespace-nowrap">{{ formatNumber(stats.totalRatings) }} valoraciones</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Contenido Publicado -->
+        <div class="card bg-base-200 shadow-xl hover:shadow-2xl transition-shadow">
+          <div class="card-body">
+            <div class="flex items-center gap-4">
+              <!-- <div class="rounded-full bg-success/10 p-3">
+                <i class="fas fa-file-alt text-2xl text-success"></i>
+              </div> -->
+              <div class="flex-1">
+                <h3 class="card-title text-lg">Contenido</h3>
+                <div class="text-3xl font-bold text-success">{{ formatNumber(stats.totalChapters) }}</div>
+                <div class="flex flex-wrap gap-1 mt-2">
+                  <span class="badge badge-success badge-sm whitespace-nowrap">{{ stats.totalVolumes }} volúmenes</span>
+                  <span class="badge badge-info badge-sm whitespace-nowrap">{{ stats.totalChapters }} capítulos</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sección de Destacados y Acciones -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <!-- Libros Destacados -->
+        <div class="card bg-base-200 shadow-xl">
+          <div class="card-body">
+            <h2 class="card-title text-xl mb-4">
+              <!-- <i class="fas fa-trophy text-warning"></i> -->
+              Mis Libros Destacados
+            </h2>
+            <div class="space-y-4">
+              <!-- Libro Más Popular -->
+              @if (stats.mostPopularBook) {
+                <div class="flex items-center gap-4 p-4 bg-base-300 rounded-lg">
+                  @if (stats.mostPopularBook.imageUrl) {
+                    <img
+                      [src]="stats.mostPopularBook.imageUrl"
+                      [alt]="stats.mostPopularBook.title"
+                      class="w-16 h-20 object-cover rounded-lg"
+                    />
+                  } @else {
+                    <div class="w-16 h-20 bg-base-100 rounded-lg flex items-center justify-center">
+                      <i class="fas fa-book text-base-content/30"></i>
+                    </div>
+                  }
+                  <div class="flex-1">
+                    <h3 class="font-semibold">{{ stats.mostPopularBook.title }}</h3>
+                    <div class="flex items-center gap-4 text-sm text-base-content/60 mt-1">
+                      <span> {{ formatNumber(stats.mostPopularBook.viewCount) }} vistas</span>
+                      <span> {{ stats.mostPopularBook.score || 'N/A' }}</span>
+                    </div>
+                    <div class="mt-2">
+                      <span class="badge badge-success">Más Popular</span>
+                    </div>
+                  </div>
+                </div>
+              }
+
+              <!-- Libro Mejor Calificado -->
+              @if (stats.bestRatedBook && stats.bestRatedBook.id !== stats.mostPopularBook?.id) {
+                <div class="flex items-center gap-4 p-4 bg-base-300 rounded-lg">
+                  @if (stats.bestRatedBook.imageUrl) {
+                    <img
+                      [src]="stats.bestRatedBook.imageUrl"
+                      [alt]="stats.bestRatedBook.title"
+                      class="w-16 h-20 object-cover rounded-lg"
+                    />
+                  } @else {
+                    <div class="w-16 h-20 bg-base-100 rounded-lg flex items-center justify-center">
+                      <i class="fas fa-book text-base-content/30"></i>
+                    </div>
+                  }
+                  <div class="flex-1">
+                    <h3 class="font-semibold">{{ stats.bestRatedBook.title }}</h3>
+                    <div class="flex items-center gap-4 text-sm text-base-content/60 mt-1">
+                      <span> {{ stats.bestRatedBook.score }} ({{ stats.bestRatedBook.totalRatings }} ratings)</span>
+                      <span> {{ formatNumber(stats.bestRatedBook.viewCount) }} vistas</span>
+                    </div>
+                    <div class="mt-2">
+                      <span class="badge badge-warning">Mejor Calificado</span>
+                    </div>
+                  </div>
+                </div>
+              }
+
+              @if (!stats.mostPopularBook && !stats.bestRatedBook) {
+                <div class="text-center py-8 text-base-content/60">
+                  <!-- <i class="fas fa-chart-line text-4xl mb-2"></i> -->
+                  <p>Tus libros aparecerán aquí cuando tengan más actividad</p>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- Acciones y Recordatorios -->
+        <div class="card bg-base-200 shadow-xl">
+          <div class="card-body">
+            <h2 class="card-title text-xl mb-4">
+              <!-- <i class="fas fa-bell text-primary"></i> -->
+              Acciones y Recordatorios
+            </h2>
+            <div class="space-y-3">
+              <!-- Última actividad -->
+              <div class="alert alert-info">
+                <div>
+                  <!-- <i class="fas fa-clock"></i> -->
+                  <div>
+                    <span class="font-semibold">Última publicación:</span>
+                    <span> {{ getDaysAgo(stats.lastChapterPublished) }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Libros inactivos -->
+              @if (stats.pausedBooks > 0) {
+                <div class="alert alert-warning">
+                  <div>
+                    <!-- <i class="fas fa-pause"></i> -->
+                    <div>
+                      <span class="font-semibold">{{ stats.pausedBooks }} libros pausados </span>
+                      <span>Considera reactivarlos</span>
+                    </div>
+                  </div>
+                  <button class="btn btn-sm btn-warning" routerLink="/write/books">Gestionar</button>
+                </div>
+              }
+
+              <!-- Libros completados -->
+              <!-- @if (stats.completedBooks > 0) {
+                <div class="alert alert-success">
+                  <div>
+                    <i class="fas fa-check-circle"></i>
+                    <div>
+                      <span class="font-semibold">{{ stats.completedBooks }} libros completados</span>
+                    </div>
+                  </div>
+                </div>
+              } -->
+
+              <!-- Acciones rápidas -->
+              <div class="border-t pt-4 mt-4">
+                <h3 class="font-semibold mb-3">Acciones Rápidas</h3>
+                <div class="grid grid-cols-2 gap-2">
+                  <button class="btn btn-outline btn-sm justify-start gap-2" routerLink="/write/books/new">
+                    <!-- <i class="fas fa-plus"></i> -->
+                    Nuevo Libro
+                  </button>
+                  <button class="btn btn-outline btn-sm justify-start gap-2" routerLink="/write/books">
+                    <!-- <i class="fas fa-edit"></i> -->
+                    Gestionar Libros
+                  </button>
+                  <button class="btn btn-outline btn-sm justify-start gap-2" routerLink="/write/submissions">
+                    <!-- <i class="fas fa-clipboard-list"></i> -->
+                    Mis Solicitudes
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Rendimiento de Libros -->
+      @if (stats.booksPerformance.length > 0) {
+        <div class="card bg-base-200 shadow-xl">
+          <div class="card-body">
+            <h2 class="card-title text-xl mb-4">
+              <!-- <i class="fas fa-chart-bar text-info"></i> -->
+              Resumen de mis Libros
+            </h2>
+            <div class="overflow-x-auto">
+              <table class="table table-zebra">
+                <thead>
+                  <tr>
+                    <th>Libro</th>
+                    <th>Vistas</th>
+                    <th>Calificación</th>
+                    <th>Capítulos</th>
+                    <!-- <th>Estado</th> -->
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (book of stats.booksPerformance; track book.bookId) {
+                    <tr>
+                      <td>
+                        <div class="flex items-center gap-3">
+                          <div class="font-semibold max-w-xs truncate">{{ book.title }}</div>
+                        </div>
+                      </td>
+                      <td>
+                        <span [class]="getPerformanceClass(book.viewCount)">
+                          {{ formatNumber(book.viewCount) }}
+                        </span>
+                      </td>
+                      <td>
+                        @if (book.score) {
+                          <div class="flex items-center gap-1">
+                            <!-- <i class="fas fa-star text-warning"></i> -->
+                            <span>{{ formatRating(book.score) }}</span>
+                          </div>
+                        } @else {
+                          <span class="text-base-content/60">Sin calificaciones</span>
+                        }
+                      </td>
+                      <td>{{ book.chapterCount }}</td>
+                      <!-- <td>
+                        <span [class]="getPerformanceBadge(book.viewCount)">
+                          {{ book.state }}
+                        </span>
+                      </td> -->
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- Tendencias (si hay datos) -->
+      @if (stats.viewsTrend.length > 0) {
+        <div class="card bg-base-200 shadow-xl mt-6">
+          <div class="card-body">
+            <h2 class="card-title text-xl mb-4">
+              <!-- <i class="fas fa-chart-line text-success"></i> -->
+              Tendencia de Vistas (Últimos 6 meses)
+            </h2>
+            <div class="space-y-2">
+              @for (trend of stats.viewsTrend; track trend.monthName) {
+                <div class="flex justify-between items-center p-2 hover:bg-base-300 rounded">
+                  <span class="font-medium">{{ trend.monthName }}</span>
+                  <div class="flex items-center gap-4">
+                    <span class="text-success font-semibold">{{ formatNumber(trend.views) }} vistas</span>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      }
+    }
+  </div>
+</div>

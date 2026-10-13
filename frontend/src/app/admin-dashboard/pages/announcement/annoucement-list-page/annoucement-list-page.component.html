@@ -1,0 +1,170 @@
+<div class="min-h-screen">
+  <div class="max-w-6xl mx-auto">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+      <div>
+        <h1 class="text-3xl font-bold">Gestión de Anuncios</h1>
+        <p class="mt-2">Administra los anuncios del sistema</p>
+      </div>
+      <a
+        routerLink="/admin/announcements/create"
+        class="bg-primary text-primary-content hover:text-primary-content/80 px-6 py-3 rounded-lg font-medium transition-colors duration-200 flex items-center gap-2 cursor-pointer"
+      >
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+        </svg>
+        Nuevo Anuncio
+      </a>
+    </div>
+
+    <!-- Loading State - Skeleton -->
+    @if (annoucementResource.isLoading()) {
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-pulse">
+        @for (i of [1,2,3,4,5,6]; track i) {
+          <div class="bg-base-300 rounded-lg shadow-sm">
+            <div class="p-6">
+              <!-- Header Skeleton -->
+              <div class="flex justify-between items-start mb-4">
+                <div class="flex-1">
+                  <div class="skeleton h-6 w-3/4 mb-2"></div>
+                  <div class="skeleton h-4 w-1/2"></div>
+                </div>
+                <div class="skeleton h-4 w-16 ml-2"></div>
+              </div>
+
+              <!-- Content Preview Skeleton -->
+              <div class="space-y-2 mb-4">
+                <div class="skeleton h-4 w-full"></div>
+                <div class="skeleton h-4 w-11/12"></div>
+                <div class="skeleton h-4 w-10/12"></div>
+              </div>
+
+              <!-- Actions Skeleton -->
+              <div class="flex gap-2 pt-4 border-t border-base-200">
+                <div class="skeleton h-10 flex-1 rounded-md"></div>
+                <div class="skeleton h-10 flex-1 rounded-md"></div>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Error State -->
+    @if (annoucementResource.error()) {
+      <div class="bg-red-50 border rounded-lg p-6 text-center mb-6">
+        <div class="flex items-center justify-center text-error mb-2">
+          <svg class="w-8 h-8 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          <span class="font-semibold">Error</span>
+        </div>
+        <p class="text-error">error al cargar los anuncios</p>
+      </div>
+    }
+
+    <!-- Announcements Grid -->
+    @if(!annoucementResource.isLoading() && !annoucementResource.error()) {
+      @if(data().length > 0) {
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          @for (announcement of data(); track announcement.id) {
+            <div class="bg-base-300 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200">
+              <div class="p-6">
+                <!-- Header -->
+                <div class="flex justify-between items-start mb-4">
+                  <h3 class="text-lg font-semibold line-clamp-2">
+                    {{ announcement.title }}
+                  </h3>
+                  <span class="text-xs whitespace-nowrap ml-2">
+                    {{ announcement.createdAt | relativeTime}}
+                  </span>
+                </div>
+
+                <!-- Content Preview -->
+                <p class="text-sm line-clamp-3 mb-4">
+                  {{ announcement.content }}
+                </p>
+
+                <!-- Actions -->
+                <div class="flex gap-2 pt-4 border-t">
+                  <a
+                    [routerLink]="['/admin/announcements/edit', announcement.id]"
+                    class="flex-1 bg-base-100 hover:bg-base-300 text-primary px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 flex items-center justify-center gap-1"
+                  >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                    </svg>
+                    Editar
+                  </a>
+
+                 <!-- Botón para abrir modal -->
+                <button
+                  class="flex-1 bg-red-50 hover:bg-red-100 text-error px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 flex items-center justify-center gap-1 cursor-pointer"
+                  (click)="openDeleteModal(announcement.id)">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                  </svg>
+                  Eliminar
+                </button>
+
+                <!-- Modal (solo uno necesario) -->
+                <dialog #deleteModal class="modal">
+                  <div class="modal-box">
+                    <h3 class="font-bold text-lg">Confirmar eliminación</h3>
+                    <p class="py-4">¿Estás seguro de que deseas eliminar este anuncio?</p>
+                    <div class="modal-action">
+                      <div class="flex justify-center gap-4 w-full">
+                        <button
+                          class="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-md font-medium transition-colors"
+                          (click)="deleteAnnouncement()">
+                          Eliminar
+                        </button>
+                        <button
+                          class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-6 py-2 rounded-md font-medium transition-colors"
+                          (click)="closeDeleteModal()">
+                          Cancelar
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Fondo del modal -->
+                  <form method="dialog" class="modal-backdrop">
+                    <button (click)="closeDeleteModal()">close</button>
+                  </form>
+                </dialog>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      } @else {
+         <div class="bg-base-300 rounded-lg shadow-sm p-8 text-center">
+          <div class="text-primary mb-4">
+            <svg class="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+          </div>
+          <h3 class="text-xl font-semibold mb-2">No hay anuncios</h3>
+          <p class="mb-6">Crea tu primer anuncio para comenzar</p>
+          <a
+            routerLink="/admin/announcements/create"
+            class="text-primary hover:text-primary/80 px-6 py-3 rounded-lg font-medium transition-colors duration-200"
+          >
+            Crear Primer Anuncio
+          </a>
+        </div>
+      }
+    }
+
+  </div>
+
+  <!-- Notificación flotante -->
+  @if (showNotification) {
+    <div
+      [class]="'alert alert-' + notificationType + ' fixed bottom-4 right-4 z-50 animate-in slide-in-from-right'"
+      role="alert">
+      <span>{{ notificationMessage }}</span>
+    </div>
+  }
+</div>

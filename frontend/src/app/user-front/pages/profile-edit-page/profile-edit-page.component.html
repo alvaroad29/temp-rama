@@ -1,0 +1,127 @@
+ <section class="flex items-center justify-center min-h-screen">
+  <section class="w-full max-w-md roundes-lg p-4 rounded-lg bg-base-200">
+    <h2 class="text-2xl font-bold mb-6">Editar</h2>
+
+    <form [formGroup]="editUserForm" (ngSubmit)="onSubmit()" class="space-y-4">
+
+        @if(hasError())
+        {
+          <span class="text-sm  text-error">
+          {{ errorMessages()[0] }}
+          </span>
+        }
+        <!-- Username -->
+      <div>
+        <div class="flex justify-between items-center mb-1">
+          <label for="username" class="label-text">Nombre de usuario</label>
+          @if (formUtils.isValidField(editUserForm, 'username')) {
+            <span class="text-sm  text-error">
+              {{ formUtils.getFieldError(editUserForm, 'username') }}
+            </span>
+          }
+        </div>
+        <input
+          id="username"
+          type="text"
+          formControlName="username"
+          class="input input-bordered w-full"
+          [class.input-error]="formUtils.isValidField(editUserForm, 'username')"
+        />
+      </div>
+
+      <!-- newPassword -->
+      <div>
+        <div class="flex justify-between items-center mb-1">
+          <label for="newPassword" class="label-text ">Nueva contraseña</label>
+          @if (formUtils.isValidField(editUserForm, 'newPassword')) {
+            <span class="text-sm  text-error">
+              {{ formUtils.getFieldError(editUserForm, 'newPassword') }}
+            </span>
+          }
+        </div>
+        <input
+          id="newPassword"
+          type="password"
+          formControlName="newPassword"
+          class="input input-bordered w-full"
+          [class.input-error]="formUtils.isValidField(editUserForm, 'newPassword')"
+        />
+      </div>
+
+      <!-- Confirm Password -->
+      <div>
+        <div class="flex justify-between items-center mb-1">
+        <label for="confirmPassword" class="label-text ">Confirmar contraseña</label>
+        @if (formUtils.isValidField(editUserForm, 'confirmPassword')) {
+          <p class="text-sm  text-error">
+            {{ formUtils.getFieldError(editUserForm, 'confirmPassword') }}
+          </p>
+        } @else if (editUserForm.errors?.['passwordsNotEqual'] && editUserForm.get('confirmPassword')?.touched) {
+          <p class="text-sm  text-error">Las contraseñas no son iguales</p>
+        }
+
+
+          </div>
+          <input
+            id="confirmPassword"
+            type="password"
+            formControlName="confirmPassword"
+            class="input input-bordered w-full"
+            [class.input-error]="
+              formUtils.isValidField(editUserForm, 'confirmPassword') ||
+              (editUserForm.errors?.['passwordsNotEqual'] && editUserForm.get('confirmPassword')?.touched)
+            "
+          />
+      </div>
+
+        <!-- currentPassword -->
+      <div>
+        <div class="flex justify-between items-center mb-1">
+          <label for="currentPassword" class="label-text ">Contraseña actual</label>
+          @if (editUserForm.errors?.['currentPasswordRequired'] && editUserForm.get('currentPassword')?.touched) {
+            <p class="text-sm  text-error">
+              La contraseña actual es requerida
+            </p>
+          } @else if (editUserForm.errors?.['passwordSameAsCurrent'] && editUserForm.get('newPassword')?.touched) {
+            <span class="text-sm text-error">
+              La nueva contraseña no puede ser igual a la actual
+            </span>
+          }
+        </div>
+        <input
+          id="currentPassword"
+          type="password"
+          formControlName="currentPassword"
+          class="input input-bordered w-full"
+          [class.input-error]="formUtils.isValidField(editUserForm, 'currentPassword')"
+        />
+      </div>
+
+      <div>
+        <button
+          type="submit"
+          class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md bg-primary hover:bg-primary/80 cursor-pointer"
+        >
+          Guardar
+        </button>
+      </div>
+      <div>
+        <a
+          routerLink="profile"
+          class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md bg-secondary hover:bg-secondary/80 cursor-pointer"
+        >
+          cancelar
+        </a>
+      </div>
+    </form>
+
+  </section>
+  @if( wasSaved() )
+  {
+    <div class="alert alert-success fixed bottom-4 rigth-4">
+      <span>Informacion actualizada</span>
+    </div>
+  }
+
+</section>
+

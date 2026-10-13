@@ -1,0 +1,38 @@
+<aside
+  class="fixed top-16 left-0 h-[calc(100vh-4rem)] bg-base-300 border-r border-base-300 z-50 transition-transform duration-300 ease-in-out"
+  [class.translate-x-0]="isOpen()"
+  [class.-translate-x-full]="!isOpen()"
+  [ngStyle]="{ width: width() }">
+
+  <div class="h-full overflow-y-auto py-4">
+    <!-- Sección ADMIN -->
+    <div class="px-4 mb-6">
+      <h3 class="text-xs font-semibold uppercase tracking-wider mb-3">USUARIOS</h3>
+      <nav class="space-y-1">
+        @for (item of adminMenuItems(); track item.label) {
+          <app-admin-sidebar-item [item]="item"></app-admin-sidebar-item>
+        }
+      </nav>
+    </div>
+
+    <!-- Sección BLOG -->
+    <div class="px-4 mb-6">
+      <h3 class="text-xs font-semibold uppercase tracking-wider mb-3">Libros</h3>
+      <nav class="space-y-1">
+        @for (item of booksMenuItems(); track item.label) {
+          <app-admin-sidebar-item [item]="item"></app-admin-sidebar-item>
+        }
+      </nav>
+    </div>
+
+    <!-- Sección PERSONAL -->
+    <div class="px-4">
+      <h3 class="text-xs font-semibold uppercase tracking-wider mb-3">ANUNCIOS</h3>
+      <nav class="space-y-1">
+        @for (item of annoucementMenuItems(); track item.label) {
+          <app-admin-sidebar-item [item]="item"></app-admin-sidebar-item>
+        }
+      </nav>
+    </div>
+  </div>
+</aside>

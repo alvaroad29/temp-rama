@@ -1,0 +1,35 @@
+<!-- user-top-menu.component.html -->
+<nav class="w-full flex flex-row justify-center">
+  <ul class="menu bg-base-200 md:menu-horizontal rounded-box">
+    <li>
+      <a routerLink="profile" class="btn" routerLinkActive="btn-primary">
+        <i-lucide [img]="user"></i-lucide>
+        Mi perfil
+      </a>
+    </li>
+    <li>
+      <a routerLink="lists" class="btn" routerLinkActive="btn-primary">
+        <i-lucide [img]="list"></i-lucide>
+        Mis listas
+      </a>
+    </li>
+    <li>
+      <a routerLink="followed-lists" class="btn" routerLinkActive="btn-primary">
+        <i-lucide [img]="heart" class="w-5 h-5"></i-lucide>
+        Listas Seguidas
+      </a>
+    </li>
+    <li>
+      <a routerLink="history" class="btn" routerLinkActive="btn-primary">
+        <i-lucide [img]="history"></i-lucide>
+        Historial
+      </a>
+    </li>
+    <li>
+      <a routerLink="reports" class="btn" routerLinkActive="btn-primary">
+        <i-lucide [img]="flag"></i-lucide>
+        Mis Reportes
+      </a>
+    </li>
+  </ul>
+</nav>

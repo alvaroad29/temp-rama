@@ -1,0 +1,24 @@
+<nav
+  class="fixed w-full bg-base-300 text-base-content shadow-md transition-all duration-300 z-50"
+  [class.-translate-y-full]="isNavbarHidden"
+  [class.top-0]="!isNavbarHidden">
+
+  <!-- Desktop Navbar -->
+  <div class="hidden md:flex items-center justify-between px-4 py-3 max-w-7xl mx-auto">
+    <!-- Logo y enlaces izquierda -->
+    <div class="flex items-center space-x-8">
+      <a routerLink="/" class="text-xl font-semibold">Online Reading App</a>
+    </div>
+    <div class="flex items-center space-x-4">
+      <toggle-theme></toggle-theme>
+    </div>
+  </div>
+
+  <!-- Mobile Navbar -->
+  <div class="md:hidden flex items-center justify-between px-4 py-3">
+    <a routerLink="/" class="text-xl font-bold">Online Reading App</a>
+    <toggle-theme></toggle-theme>
+  </div>
+
+
+</nav>

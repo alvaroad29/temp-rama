@@ -1,0 +1,287 @@
+<div class="max-w-3xl mx-auto p-4 sm:p-6 lg:p-8">
+  <h1 class="text-2xl font-bold mb-6">Crear nuevo libro</h1>
+
+  <!-- Aclaración sobre volúmenes -->
+  <div class="mb-6 p-4 bg-base-200 rounded-lg text-sm text-base-content/80 border border-base-300">
+    <p>
+      <strong>Nota:</strong> Todos los libros tienen al menos un volumen.
+      Puedes usarlo como contenedor único para todos tus capítulos, o crear múltiples volúmenes después.
+    </p>
+  </div>
+
+  <form [formGroup]="bookForm" (ngSubmit)="onSubmit()" class="space-y-6">
+
+    <!-- Error general -->
+    @if (hasError()) {
+      <div class="text-sm text-error">
+        {{ errorMessages()[0] }}
+      </div>
+    }
+
+    <!-- === LIBRO === -->
+
+    <!-- Título del libro -->
+    <div>
+      <div class="flex justify-between items-center mb-1">
+        <label for="title" class="label-text">Título del libro</label>
+        @if (formUtils.isValidField(bookForm, 'title')) {
+          <span class="text-sm text-error">
+            {{ formUtils.getFieldError(bookForm, 'title') }}
+          </span>
+        }
+      </div>
+      <input
+        id="title"
+        type="text"
+        formControlName="title"
+        class="input input-bordered w-full"
+        [class.input-error]="formUtils.isValidField(bookForm, 'title')"
+
+      />
+    </div>
+
+    <!-- Portada (archivo de imagen) -->
+    <div>
+      <label for="coverImage" class="label-text mb-1 block">Portada (opcional)</label>
+
+      @if (!coverUrl() && !isSubmitting()) {
+        <input
+          id="coverImage"
+          type="file"
+          (change)="onCoverSelected($event)"
+          accept="image/*"
+          class="file-input file-input-bordered w-full"
+          [disabled]="isSubmitting()"
+        />
+      }
+
+      @if (isSubmitting() && cover) {
+        <div class="flex items-center gap-4 p-4 bg-base-200 rounded-lg">
+          <span class="loading loading-spinner loading-sm"></span>
+          <span class="text-sm">Subiendo portada...</span>
+        </div>
+      }
+
+      @if (coverUrl() && coverPreview()) {
+        <div class="flex items-center gap-4">
+          <div class="relative">
+            <img [src]="coverPreview()" alt="Vista previa de portada" class="w-32 h-48 object-cover rounded shadow" />
+            <button
+              (click)="deleteCover()"
+              class="absolute -top-2 -right-2 bg-error text-error-content rounded-full p-1 w-6 h-6 flex items-center justify-center"
+              title="Eliminar portada"
+              type="button"
+              [disabled]="isSubmitting()"
+            >
+              <i class="fas fa-times text-xs"></i>
+            </button>
+          </div>
+          <span class="text-sm text-success">✓ Portada cargada</span>
+        </div>
+      }
+
+      <p class="text-xs text-base-content/60 mt-1">
+        Soporta: JPG, PNG, WEBP (máx. 2MB)
+      </p>
+    </div>
+
+    <!-- Sinopsis -->
+    <div>
+      <div class="flex justify-between items-center mb-1">
+        <label for="synopsis" class="label-text">Sinopsis (máx. 4000 caracteres)</label>
+        @if (bookForm.get('synopsis')?.invalid && bookForm.get('synopsis')?.touched) {
+          <span class="text-sm text-error">
+            {{ bookForm.get('synopsis')?.errors?.['maxlength'] ? 'Máximo 4000 caracteres' : '' }}
+          </span>
+        }
+      </div>
+      <textarea
+        id="synopsis"
+        formControlName="synopsis"
+        class="textarea textarea-bordered w-full"
+        rows="4"
+        maxlength="4000"
+
+      ></textarea>
+      <div class="text-right text-sm text-base-content/60 mt-1">
+        {{ bookForm.get('synopsis')?.value?.length || 0 }}/4000
+      </div>
+    </div>
+
+    <!-- Géneros -->
+    <div>
+      <label class="label-text mb-2 block">Géneros</label>
+      @if (formUtils.isValidField(bookForm, 'genres')) {
+        <div class="text-sm text-error mb-2">
+          {{ formUtils.getFieldError(bookForm, 'genres') }}
+        </div>
+      }
+      <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-40 overflow-y-auto p-2 border border-base-300 rounded">
+        @for (genre of genres(); track genre.id) {
+          <label class="cursor-pointer flex items-center space-x-2 p-2 hover:bg-base-200 rounded">
+            <input
+              type="checkbox"
+              [value]="genre.id"
+              (change)="onGenreChange($event)"
+              [checked]="isGenreSelected(genre.id)"
+              class="checkbox checkbox-primary checkbox-sm"
+            />
+            <span class="text-sm">{{ genre.name }}</span>
+          </label>
+        }
+      </div>
+    </div>
+
+    <!-- === VOLUMEN === -->
+    <div class="divider mt-8 mb-6">Volumen inicial</div>
+
+    <!-- Título del volumen -->
+    <div>
+      <div class="flex justify-between items-center mb-1">
+        <label for="volumeTitle" class="label-text">Título del volumen</label>
+        @if (formUtils.isValidField(bookForm, 'volumeTitle')) {
+          <span class="text-sm text-error">
+            {{ formUtils.getFieldError(bookForm, 'volumeTitle') }}
+          </span>
+        }
+      </div>
+      <input
+        id="volumeTitle"
+        type="text"
+        formControlName="volumeTitle"
+        class="input input-bordered w-full"
+
+      />
+    </div>
+
+    <!-- Orden del volumen -->
+    <div>
+      <div class="flex justify-between items-center mb-1">
+        <label for="volumeOrder" class="label-text">Orden del volumen</label>
+        @if (formUtils.isValidField(bookForm, 'volumeOrder')) {
+          <span class="text-sm text-error">
+            {{ formUtils.getFieldError(bookForm, 'volumeOrder') }}
+          </span>
+        }
+      </div>
+      <input
+        id="volumeOrder"
+        type="number"
+        formControlName="volumeOrder"
+        class="input input-bordered w-full"
+        min="1"
+        value="1"
+      />
+    </div>
+
+    <!-- === CAPÍTULO INICIAL === -->
+    <div class="divider mt-8 mb-6">Capítulo inicial</div>
+
+    <!-- Título del capítulo -->
+    <div>
+      <div class="flex justify-between items-center mb-1">
+        <label for="chapterTitle" class="label-text">Título del capítulo</label>
+        @if (formUtils.isValidField(bookForm, 'chapterTitle')) {
+          <span class="text-sm text-error">
+            {{ formUtils.getFieldError(bookForm, 'chapterTitle') }}
+          </span>
+        }
+      </div>
+      <input
+        id="chapterTitle"
+        type="text"
+        formControlName="chapterTitle"
+        class="input input-bordered w-full"
+        
+      />
+    </div>
+
+    <!-- Orden del capítulo -->
+    <div>
+      <div class="flex justify-between items-center mb-1">
+        <label for="chapterOrder" class="label-text">Orden del capítulo</label>
+        @if (formUtils.isValidField(bookForm, 'chapterOrder')) {
+          <span class="text-sm text-error">
+            {{ formUtils.getFieldError(bookForm, 'chapterOrder') }}
+          </span>
+        }
+      </div>
+      <input
+        id="chapterOrder"
+        type="number"
+        formControlName="chapterOrder"
+        class="input input-bordered w-full"
+        min="1"
+        value="1"
+      />
+    </div>
+
+    <!-- Contenido del capítulo - MARKDOWN EDITOR -->
+    <div>
+      <div class="flex justify-between items-center mb-1">
+        <label class="label-text">Contenido del capítulo</label>
+        @if (isChapterContentInvalid()) {
+          <span class="text-sm text-error">
+            {{ getChapterContentError() }}
+          </span>
+        }
+      </div>
+
+      <!-- Editor Markdown -->
+      <app-markdown-editor
+        [content]="bookForm.get('chapterContent')?.value"
+        (contentChanged)="onChapterContentChange($event)"
+      ></app-markdown-editor>
+
+      <p class="text-xs text-base-content/60 mt-2">
+        Escribe tu contenido usando <strong>Markdown</strong>. Soporta:
+        <strong>negritas</strong>, <em>itálicas</em>, listas, encabezados, y más.
+      </p>
+
+      <!-- Contador de caracteres -->
+       <div class="flex justify-between items-center mt-1">
+        <span class="text-xs text-base-content/60">
+          @if (bookForm.get('chapterContent')?.value?.length < 500) {
+            <span class="text-warning">Mínimo 500 caracteres</span>
+          } @else {
+            <span>Longitud adecuada</span>
+          }
+        </span>
+        <span
+          class="text-sm"
+          [class.text-base-content]="bookForm.get('chapterContent')?.value?.length <= 20000"
+          [class.text-warning]="bookForm.get('chapterContent')?.value?.length > 18000 && bookForm.get('chapterContent')?.value?.length <= 200000"
+          [class.text-error]="bookForm.get('chapterContent')?.value?.length > 20000"
+        >
+          {{ bookForm.get('chapterContent')?.value?.length || 0 }}/20,000
+        </span>
+      </div>
+    </div>
+
+    <!-- Botón de envío -->
+    <div class="mt-8 flex gap-4">
+      <button
+        type="button"
+        (click)="resetForm()"
+        class="btn btn-ghost"
+        [disabled]="isSubmitting()"
+      >
+        Limpiar
+      </button>
+      <button
+        type="submit"
+        [disabled]="bookForm.invalid || isSubmitting()"
+        class="btn btn-primary flex-1"
+      >
+        @if (isSubmitting()) {
+          <span class="loading loading-spinner loading-sm"></span>
+          Enviando...
+        } @else if (bookForm.invalid) {
+          Completa todos los campos requeridos
+        } @else {
+          Enviar solicitud
+        }
+      </button>
+    </div>
+  </form>
+</div>

@@ -1,0 +1,76 @@
+<section class="sm:py-5">
+  @if (homeCarouselResource.isLoading()) {
+    <div class="w-full h-[300px]">
+      <div class="skeleton h-full w-full rounded-lg"></div>
+    </div>
+  }
+  <!-- Estado: Error -->
+  @else if (homeCarouselResource.error()) {
+    <div class="text-center py-5">
+      <p class="text-error">Error al cargar los libros.</p>
+    </div>
+  }
+  <!-- Estado: Datos cargados -->
+  @else {
+    <div class="relative">
+      <app-carousel [books]="getBooksHomeCarousel()"></app-carousel>
+    </div>
+  }
+
+  <section class="px-10">
+    <announcement></announcement>
+
+    <div class="divider my-10 pt-5 pb text-2xl font-semibold">POPULAR</div>
+
+    <div class="flex flex-row justify-center align-middle mb-3">
+      <ul class="menu menu-horizontal bg-base-200 rounded-box">
+        <li>
+          <a
+            [class.bg-primary]="selectedPeriod() === 'daily'"
+            (click)="changePeriod('daily')"
+          >
+            Diario
+          </a>
+        </li>
+        <li>
+          <a
+            [class.bg-primary]="selectedPeriod() === 'weekly'"
+            (click)="changePeriod('weekly')"
+          >
+            Semanal
+          </a>
+        </li>
+        <li>
+          <a
+            [class.bg-primary]="selectedPeriod() === 'monthly'"
+            (click)="changePeriod('monthly')"
+          >
+            Mensual
+          </a>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Estado: Cargando -->
+    @if (booksResource.isLoading()) {
+      <div class="w-full h-[300px] px-4">
+        <div class="skeleton h-full w-full rounded-lg"></div>
+      </div>
+    }
+
+    <!-- Estado: Error -->
+    @else if (booksResource.error()) {
+      <div class="text-center py-5">
+        <p class="text-error">Error al cargar los libros populares.</p>
+      </div>
+    }
+
+    <!-- Estado: Datos cargados -->
+    @else {
+      <book-carousel [cards]="getPopularBooks()"></book-carousel>
+    }
+
+    <div class="divider my-10 pt-5 pb text-2xl font-semibold">ÚLTIMAS ACTUALIZACIONES</div>
+    <recent-updates></recent-updates>
+  </section>
+</section>

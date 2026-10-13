@@ -1,0 +1,58 @@
+services:
+  db:
+    image: postgres:16
+    container_name: postgres-booklist
+    environment:
+      POSTGRES_DB: booklistdb
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: TuPasswordSeguro123!
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d booklistdb"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile  
+    container_name: booklist-api
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy 
+    environment:
+      DOCKER_ENV: true
+      ASPNETCORE_ENVIRONMENT: Development   
+      ApplyMigrationsOnStartup: true
+      ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=booklistdb;Username=admin;Password=TuPasswordSeguro123!"
+      SEED_DATA: true
+    networks:
+      - app-network
+    restart: on-failure 
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: booklist-ui
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - app-network
+
+volumes:
+  postgres_data: 
+
+networks:
+  app-network:
+    driver: bridge

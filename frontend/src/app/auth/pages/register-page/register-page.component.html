@@ -1,0 +1,135 @@
+
+@if(isLoading())
+{
+  <span class="loading loading-spinner loading-xs"></span>
+}
+
+    <h2 class="text-2xl font-bold mb-6">Crear cuenta</h2>
+
+    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="space-y-4">
+
+        @if(hasError())
+        {
+          <span class="text-sm  text-error">
+          {{ errorMessages()[0] }}
+          </span>
+        }
+      <!-- Username -->
+      <div>
+        <div class="flex justify-between items-center mb-1">
+          <label for="username" class="label-text">Nombre de usuario</label>
+          @if (formUtils.isValidField(registerForm, 'username')) {
+            <span class="text-sm  text-error">
+              {{ formUtils.getFieldError(registerForm, 'username') }}
+            </span>
+          }
+        </div>
+        <input
+          id="username"
+          type="text"
+          formControlName="username"
+          class="input input-bordered w-full"
+          [class.input-error]="formUtils.isValidField(registerForm, 'username')"
+        />
+      </div>
+
+      <!-- Email -->
+      <div>
+        <div class="flex justify-between items-center mb-1">
+          <label for="email" class="label-text">Email</label>
+          @if (formUtils.isValidField(registerForm, 'email')) {
+            <span class="text-sm  text-error">
+              {{ formUtils.getFieldError(registerForm, 'email') }}
+            </span>
+          }
+        </div>
+        <input
+          id="email"
+          type="email"
+          formControlName="email"
+          class="input input-bordered w-full"
+          [class.input-error]="formUtils.isValidField(registerForm, 'email')"
+        />
+      </div>
+
+      <!-- Password -->
+      <div>
+        <div class="flex justify-between items-center mb-1">
+          <label for="password" class="label-text ">Contraseña</label>
+          @if (formUtils.isValidField(registerForm, 'password')) {
+            <span class="text-sm  text-error">
+              {{ formUtils.getFieldError(registerForm, 'password') }}
+            </span>
+          }
+        </div>
+        <input
+          id="password"
+          type="password"
+          formControlName="password"
+          class="input input-bordered w-full"
+          [class.input-error]="formUtils.isValidField(registerForm, 'password')"
+        />
+      </div>
+
+      <!-- Confirm Password -->
+       <div>
+      <div class="flex justify-between items-center mb-1">
+      <label for="confirmPassword" class="label-text ">Confirmar contraseña</label>
+      @if (formUtils.isValidField(registerForm, 'confirmPassword')) {
+        <p class="text-sm  text-error">
+          {{ formUtils.getFieldError(registerForm, 'confirmPassword') }}
+        </p>
+      } @else if (registerForm.errors?.['passwordsNotEqual'] && registerForm.get('confirmPassword')?.touched) {
+        <p class="text-sm  text-error">Las contraseñas no son iguales</p>
+      }
+
+
+        </div>
+        <input
+          id="confirmPassword"
+          type="password"
+          formControlName="confirmPassword"
+          class="input input-bordered w-full"
+          [class.input-error]="
+            formUtils.isValidField(registerForm, 'confirmPassword') ||
+            (registerForm.errors?.['passwordsNotEqual'] && registerForm.get('confirmPassword')?.touched)
+          "
+        />
+      </div>
+
+      <!-- Checkboxes -->
+      <!-- <div class="space-y-2 mt-2">
+        <label class="flex items-start gap-2">
+          <input type="checkbox" class="checkbox checkbox-sm mt-1" />
+          <span class="text-sm">
+            I have read and agree to
+            <a href="#" class="link link-primary">‘Privacy Policy’</a> and
+            <a href="#" class="link link-primary">‘Terms of Use’</a>.
+          </span>
+        </label>
+
+        <label class="flex items-start gap-2">
+          <input type="checkbox" class="checkbox checkbox-sm mt-1" />
+          <span class="text-sm">
+            By ticking this box, you agree to receive marketing related electronic communications from Wuxiaworld.
+          </span>
+        </label>
+      </div> -->
+
+      <!-- Submit Button -->
+     <div>
+    <button
+      type="submit"
+      class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md bg-primary hover:bg-primary/80 cursor-pointer"
+    >
+      Crear cuenta
+    </button>
+  </div>
+
+      <p class="text-center">
+      ¿Ya tenes una cuenta?
+        <a routerLink="/auth/login" class="text-info hover:underline ">Inicia sesión</a>
+      </p>
+    </form>
+
+

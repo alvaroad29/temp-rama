@@ -1,0 +1,224 @@
+ <div class="min-h-screen bg-base-100 py-6 px-4 sm:px-6 lg:px-8">
+      <div class="max-w-7xl mx-auto">
+
+        <!-- Header -->
+        <div class="mb-8">
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <h1 class="text-3xl font-bold text-base-content">Mis Solicitudes</h1>
+              <p class="text-base-content/60 mt-2">
+                Revisa el estado de tus solicitudes de publicación
+              </p>
+            </div>
+            <button
+              routerLink="/write/books/new"
+              class="btn btn-primary gap-2"
+            >
+              <i-lucide [img]="plus"></i-lucide>
+
+              Nueva Solicitud
+            </button>
+          </div>
+        </div>
+
+        <!-- Estado: Cargando -->
+        @if (submissionsResource.isLoading()) {
+          <div class="space-y-4">
+            @for (i of [1,2,3]; track i) {
+              <div class="card bg-base-200 shadow-xl animate-pulse">
+                <div class="card-body">
+                  <div class="flex flex-col md:flex-row gap-4">
+                    <div class="w-32 h-48 bg-base-300 rounded-lg mx-auto md:mx-0"></div>
+                    <div class="flex-1 space-y-3">
+                      <div class="h-6 bg-base-300 rounded w-3/4"></div>
+                      <div class="h-4 bg-base-300 rounded w-full"></div>
+                      <div class="h-4 bg-base-300 rounded w-2/3"></div>
+                      <div class="flex gap-2">
+                        <div class="h-6 bg-base-300 rounded w-20"></div>
+                        <div class="h-6 bg-base-300 rounded w-24"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        }
+
+        <!-- Estado: Error -->
+        @if (submissionsResource.error() && !submissionsResource.isLoading()) {
+          <div class="alert alert-error shadow-lg">
+            <div>
+              <!-- <i class="fas fa-exclamation-triangle"></i> -->
+              <span>Error al cargar las solicitudes. Intenta nuevamente.</span>
+            </div>
+            <!-- <button class="btn btn-ghost btn-sm" (click)="submissionsResource.reload()">
+              Reintentar
+            </button> -->
+          </div>
+        }
+
+        <!-- Estado: Sin submissions -->
+        @if (!submissionsResource.isLoading() && !submissionsResource.error() && submissions()!.length === 0) {
+          <div class="text-center py-12">
+            <div class="max-w-md mx-auto">
+              <!-- <i class="fas fa-inbox text-6xl text-base-content/20 mb-4"></i> -->
+              <h3 class="text-xl font-semibold mb-2">No tienes solicitudes</h3>
+              <p class="text-base-content/60 mb-6">
+                Envía tu primera solicitud de publicación para comenzar.
+              </p>
+              <button
+                routerLink="/write/books/new"
+                class="btn btn-primary gap-2"
+              >
+                <i-lucide [img]="plus"></i-lucide>
+                Crear Primera Solicitud
+              </button>
+            </div>
+          </div>
+        }
+
+        <!-- Estado: Con submissions -->
+        @if (!submissionsResource.isLoading() && !submissionsResource.error() && submissions()!.length > 0) {
+          <div class="space-y-6">
+
+            <!-- Estadísticas rápidas -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+              <div class="stat bg-base-200 rounded-lg">
+                <div class="stat-figure text-primary">
+                  <!-- <i class="fas fa-clock text-2xl"></i> -->
+                </div>
+                <div class="stat-title">Pendientes</div>
+                <div class="stat-value text-primary">{{ pendingCount() }}</div>
+              </div>
+
+              <div class="stat bg-base-200 rounded-lg">
+                <div class="stat-figure text-success">
+                  <!-- <i class="fas fa-check text-2xl"></i> -->
+                </div>
+                <div class="stat-title">Aprobadas</div>
+                <div class="stat-value text-success">{{ approvedCount() }}</div>
+              </div>
+
+              <div class="stat bg-base-200 rounded-lg">
+                <div class="stat-figure text-error">
+                  <!-- <i class="fas fa-times text-2xl"></i> -->
+                </div>
+                <div class="stat-title">Rechazadas</div>
+                <div class="stat-value text-error">{{ rejectedCount() }}</div>
+              </div>
+            </div>
+
+            <!-- Lista de submissions -->
+            <div class="space-y-4">
+              @for (submission of submissions(); track submission.id) {
+                <div class="card bg-base-200 shadow-xl hover:shadow-2xl transition-shadow duration-300">
+                  <div class="card-body">
+                    <div class="flex flex-col md:flex-row gap-6">
+
+                      <!-- Portada -->
+                      <div class="flex-shrink-0 mx-auto md:mx-0">
+                        @if (submission.coverUrl) {
+                          <img
+                            [src]="submission.coverUrl"
+                            [alt]="submission.title"
+                            class="w-32 h-48 object-cover rounded-lg shadow-md"
+                          />
+                        } @else {
+                          <img
+                            [src]="'./assets/image-placeholder.png'"
+                            [alt]="submission.title"
+                            class="w-32 h-48 object-cover rounded-lg shadow-md"
+                          />
+                        }
+                      </div>
+
+                      <!-- Contenido -->
+                      <div class="flex-1">
+                        <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
+                          <div>
+                            <h3 class="card-title text-xl mb-2">{{ submission.title }}</h3>
+                            <p class="text-base-content/70 line-clamp-2 mb-3">
+                              {{ submission.synopsis || 'Sin descripción' }}
+                            </p>
+                          </div>
+
+                          <!-- Estado -->
+                          <div class="flex-shrink-0">
+                            <div [class]="getStatusBadgeClass(submission.status)">
+                              {{ getStatusText(submission.status) }}
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- Información adicional -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
+                          <div class="flex items-center gap-2">
+                            <!-- <i class="fas fa-book-open text-base-content/50"></i> -->
+                            <span>Volumen: {{ submission.volumeTitle }}</span>
+                          </div>
+                          <div class="flex items-center gap-2">
+                            <!-- <i class="fas fa-file-alt text-base-content/50"></i> -->
+                            <span>Capítulo: {{ submission.chapterTitle }}</span>
+                          </div>
+                          <div class="flex items-center gap-2">
+                            <!-- <i class="fas fa-calendar text-base-content/50"></i> -->
+                            <span>Enviado: {{ formatDate(submission.createdAt) }}</span>
+                          </div>
+                          <div class="flex items-center gap-2">
+                            <!-- <i class="fas fa-tags text-base-content/50"></i> -->
+                            <span>{{ submission.genreIds.length }} géneros</span>
+                          </div>
+                        </div>
+
+                        <!-- Feedback del admin -->
+                        @if (submission.adminFeedback && submission.status !== BookSubmissionStatusEnum.Pending) {
+                          <div class="mt-4 p-3 bg-base-300 rounded-lg">
+                            <div class="flex items-center gap-2 mb-1">
+                              <!-- <i class="fas fa-comment text-info"></i> -->
+                              <span class="font-semibold">Feedback del administrador:</span>
+                            </div>
+                            <p class="text-sm text-base-content/80">{{ submission.adminFeedback }}</p>
+                          </div>
+                        }
+
+                        <!-- Acciones -->
+                        <div class="card-actions justify-end mt-4">
+                          <button
+                            class="btn btn-primary btn-sm gap-2"
+                            (click)="viewSubmission(submission.id)"
+                          >
+                            <!-- <i class="fas fa-eye"></i> -->
+                            Ver Detalles
+                          </button>
+
+                          @if (submission.status === BookSubmissionStatusEnum.NeedsChanges) {
+                            <button
+                              [routerLink]="['/write/submissions', submission.id, 'edit']"
+                              class="btn btn-warning btn-sm gap-2"
+                            >
+                              <!-- <i-lucide [img]="edit"></i-lucide> -->
+                              Editar
+                            </button>
+                          }
+
+                          @if (submission.status === BookSubmissionStatusEnum.Pending) {
+                            <button
+                              class="btn btn-error btn-sm gap-2"
+                              (click)="deleteSubmission(submission.id, submission.title)"
+                            >
+                              <!-- <i class="fas fa-trash"></i> -->
+                              Cancelar
+                            </button>
+                          }
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    </div>

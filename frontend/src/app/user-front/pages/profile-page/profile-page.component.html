@@ -1,0 +1,125 @@
+<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+  <!-- Mensajes de éxito -->
+  @if (successMessage()) {
+    <div class="fixed bottom-4 right-4 z-50 max-w-sm">
+      <div class="alert alert-success shadow-lg animate-in slide-in-from-right">
+        <span>{{ successMessage() }}</span>
+      </div>
+    </div>
+  }
+
+  <div class="bg-base-300 rounded-lg overflow-hidden">
+    <div class="md:flex">
+      <!-- Sección izquierda (Imagen de perfil) -->
+      <div class="md:w-1/3 p-6 border-b md:border-b-0 md:border-r">
+        <div class="text-center">
+          <div class="mx-auto relative w-32 h-32 rounded-full bg-neutral-content mb-4 overflow-hidden">
+            <img
+              [src]="currentImage()"
+              class="w-full h-full object-cover"
+              alt="Sin foto de perfil"
+            >
+          </div>
+
+          <!-- Preview de nueva imagen con acciones -->
+          @if (imagePreview()) {
+            <div class="mb-4 p-3 bg-warning/20 rounded-lg">
+              <p class="text-warning text-sm font-medium mb-2">Vista previa de nueva imagen</p>
+              <div class="flex gap-2 justify-center">
+                <button
+                  class="btn btn-sm btn-success"
+                  (click)="uploadImage()"
+                  [disabled]="isLoading()"
+                >
+                  @if (isLoading()) {
+                    <span class="loading loading-spinner loading-xs"></span>
+                  }
+                  Confirmar
+                </button>
+                <button
+                  class="btn btn-sm btn-ghost"
+                  (click)="cancelUpload()"
+                  [disabled]="isLoading()"
+                >
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          }
+
+          <!-- Botón para eliminar imagen actual (solo si existe imagen y no hay preview) -->
+          @if (user()?.imageUrl && !imagePreview()) {
+            <button
+              class="btn btn-sm btn-error mb-4 w-full"
+              (click)="removeImage()"
+              [disabled]="isLoading()"
+            >
+              @if (isLoading()) {
+                <span class="loading loading-spinner loading-xs"></span>
+              }
+              <i-lucide [name]="trashIcon" class="w-4 h-4"></i-lucide>
+              Eliminar foto actual
+            </button>
+          }
+
+          <!-- Input para subir imagen -->
+          <input
+            id="profileImage"
+            type="file"
+            accept=".jpg,.jpeg,.png,.webp"
+            class="file-input file-input-bordered w-full"
+            (change)="onFileChange($event)"
+            [disabled]="isLoading() || !!imagePreview()"
+          />
+
+          <!-- Información de formatos y tamaño -->
+          <p class="text-xs mt-2">Formatos: JPG, JPEG, PNG, WebP</p>
+          <p class="text-xs">Tamaño máximo: 1 MB</p>
+
+          <!-- Mensajes de error -->
+          @if (errorMessages().length > 0) {
+            <div class="alert alert-error mt-4">
+              <div>
+                @for (error of errorMessages(); track $index) {
+                  <span class="text-sm">{{ error }}</span>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Sección derecha (Datos del usuario) -->
+      <div class="md:w-2/3 p-6">
+        <div class="flex justify-between items-start mb-6">
+          <h2 class="text-2xl font-bold">Mi perfil</h2>
+          <a
+            routerLink="edit"
+            class="cursor-pointer hover:text-primary transition-colors"
+            title="Editar perfil"
+          >
+            <i-lucide [name]="editIcon" class="w-6 h-6"></i-lucide>
+          </a>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="space-y-4">
+          <div>
+            <label class="block text-lg font-medium">Nombre de usuario</label>
+            <p class="mt-1 text-sm">{{ user()?.userName }}</p>
+          </div>
+          <div>
+            <label class="block text-lg font-medium">Correo</label>
+            <p class="mt-1 text-sm">{{ user()?.email }}</p>
+          </div>
+          <div>
+            <label class="block text-lg font-medium">Miembro desde</label>
+            <p class="mt-1 text-sm">{{ user()?.createdAt | date:'dd/MM/yyyy' }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

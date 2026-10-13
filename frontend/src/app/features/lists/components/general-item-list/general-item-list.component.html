@@ -1,0 +1,164 @@
+<!-- general-item-list.component.html -->
+<div class="flex flex-col sm:flex-row gap-4 p-4 bg-base-300 rounded-lg hover:bg-base-300/80 transition-colors">
+  <!-- Imagen -->
+  <div class="flex-shrink-0 mx-auto sm:mx-0">
+    <img [src]="list()?.imageUrl || './assets/image-placeholder.png'"
+         [alt]="list()?.title"
+         (error)="onImageError()"
+         class="w-20 h-20 sm:w-24 sm:h-24 rounded object-cover border border-base-content/10" />
+  </div>
+
+  <div class="flex-1 min-w-0 text-center sm:text-left">
+    <!-- Título y acciones -->
+    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 mb-2">
+      <a [routerLink]="['/lists', list()?.id]"
+         class="text-xl font-bold truncate hover:text-primary transition-colors">
+        {{ list()?.title }}
+      </a>
+
+      <div class="flex justify-center sm:justify-start gap-2">
+        <!-- Botón de dejar de seguir (solo si showFollowButton es true) -->
+        @if (showFollowButton()) {
+          <button
+            (click)="unfollowList()"
+            [disabled]="isFollowingLoading()"
+            class="btn btn-outline btn-error btn-sm gap-2"
+            title="Dejar de seguir"
+          >
+            @if (isFollowingLoading()) {
+              <span class="loading loading-spinner loading-xs"></span>
+            } @else {
+              <i-lucide [name]="heartIcon" class="w-4 h-4 fill-current"></i-lucide>
+            }
+            Dejar de seguir
+          </button>
+        }
+
+        <!-- Acciones de edición/eliminación (solo si showActions es true) -->
+        @if (showActions()) {
+          <a
+            [routerLink]="['/user/lists/edit', list()?.id]"
+            class="btn btn-ghost btn-xs"
+          >
+            <i-lucide [name]="edit" class="w-4 h-4"></i-lucide>
+            Editar
+          </a>
+          <button
+            class="btn btn-ghost btn-xs text-error"
+            (click)="confirmDelete()"
+          >
+            <i-lucide [name]="deleteIcon" class="w-4 h-4"></i-lucide>
+            Eliminar
+          </button>
+        }
+      </div>
+    </div>
+
+    <!-- Mensaje de error para seguir/dejar de seguir -->
+    @if (followError()) {
+      <div class="alert alert-error shadow-lg mb-3 py-2">
+        <div class="flex items-center gap-2">
+          <i-lucide name="alert-circle" class="w-4 h-4"></i-lucide>
+          <span class="text-sm">{{ followError() }}</span>
+        </div>
+      </div>
+    }
+
+    <!-- Estadísticas -->
+    <div class="flex flex-wrap justify-center sm:justify-start gap-3 text-sm text-base-content/70 mb-3">
+      <div class="flex items-center gap-1">
+        <i-lucide [name]="cant" class="w-4 h-4"></i-lucide>
+        {{ list()?.bookCount || 0 }} {{ list()?.bookCount === 1 ? 'Serie' : 'Series' }}
+      </div>
+      <div class="flex items-center gap-1">
+        <i-lucide [name]="follow" class="w-4 h-4"></i-lucide>
+        {{ list()?.followersCount || 0 }} {{ list()?.followersCount === 1 ? 'Seguidor' : 'Seguidores' }}
+      </div>
+      <div class="flex items-center gap-1">
+        <i-lucide [name]="calendar" class="w-4 h-4"></i-lucide>
+        {{ list()!.creationDate | relativeTime }}
+      </div>
+      <div class="flex items-center gap-1">
+        <i-lucide [name]="user" class="w-4 h-4"></i-lucide>
+        {{ list()?.creatorName || 'Desconocido' }}
+      </div>
+
+      @if (showActions()) {
+        <div class="flex items-center gap-1">
+          @if (list()?.isPublic) {
+            <i-lucide [name]="globeIcon" class="w-4 h-4 text-success"></i-lucide>
+            <span>Pública</span>
+          } @else {
+            <i-lucide [name]="lockIcon" class="w-4 h-4 text-warning"></i-lucide>
+            <span>Privada</span>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- Géneros -->
+    @if (list()!.genres && list()!.genres!.length > 0) {
+      <div class="flex flex-wrap justify-center sm:justify-start gap-2 mb-3">
+        @for (genre of list()!.genres!.slice(0, 3); track genre.id) {
+          <span class="badge badge-outline text-xs">
+            {{ genre.name }}
+          </span>
+        }
+        @if (list()?.genres!.length > 3) {
+          <span class="badge badge-ghost text-xs">
+            +{{ list()?.genres!.length - 3 }}
+          </span>
+        }
+      </div>
+    }
+
+    <!-- Descripción -->
+    <p class="text-sm line-clamp-2 text-center sm:text-left">
+      {{ list()?.description || 'Esta lista no tiene descripción.' }}
+    </p>
+  </div>
+</div>
+
+<!-- Modal de confirmación de eliminación -->
+@if (showDeleteModal()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-opacity-50">
+    <div class="modal modal-open">
+      <div class="modal-box">
+        <h3 class="font-bold text-lg">¿Eliminar lista?</h3>
+        <p class="py-4">
+          ¿Estás seguro de que quieres eliminar la lista
+          <strong>"{{ list()?.title }}"</strong>?
+          Esta acción no se puede deshacer.
+        </p>
+
+        <!-- Mensaje de error -->
+        @if (deleteError()) {
+          <div class="alert alert-error mb-4">
+            <i-lucide name="alert-circle" class="w-5 h-5"></i-lucide>
+            <span>{{ deleteError() }}</span>
+          </div>
+        }
+
+        <div class="modal-action">
+          <button
+            class="btn btn-ghost"
+            (click)="cancelDelete()"
+            [disabled]="isDeleting()"
+          >
+            Cancelar
+          </button>
+          <button
+            class="btn btn-error"
+            (click)="onDelete()"
+            [disabled]="isDeleting()"
+          >
+            @if (isDeleting()) {
+              <span class="loading loading-spinner"></span>
+            }
+            Eliminar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}

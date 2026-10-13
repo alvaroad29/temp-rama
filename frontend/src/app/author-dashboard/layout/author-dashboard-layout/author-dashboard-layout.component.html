@@ -1,0 +1,41 @@
+<!-- Overlay para pantallas pequeñas -->
+@if (isSidebarOpen() && isMobile()) {
+  <div
+    class="fixed top-16 left-0 right-0 bottom-0 bg-black/30 z-40 lg:hidden"
+    (click)="closeSidebar()">
+  </div>
+}
+
+<app-author-navbar
+  [isSidebarOpen]="isSidebarOpen()"
+  (toggleSidebar)="toggleSidebar()">
+</app-author-navbar>
+
+<app-author-sidebar
+  [isOpen]="isSidebarOpen()"
+  [width]="sidebarWidth()"
+  [authorMenuItems]="authorMenuItems"
+  (closeSidebar)="closeSidebar()">
+</app-author-sidebar>
+
+<!-- Contenido principal -->
+<main
+  class="transition-all duration-300 ease-in-out pt-16"
+  [ngStyle]="{
+    marginLeft: isMobile() ? '0' : (isSidebarOpen() ? sidebarWidth() : '0'),
+    paddingLeft: isMobile() ? '0' : '0'
+  }">
+  <div class="p-6 min-h-screen">
+    <!-- <app-stats-cards [cards]="statsCards"></app-stats-cards> -->
+    <router-outlet/>
+
+
+    <!-- Footer -->
+    <!-- <div class="mt-8 py-4 text-center">
+      <p class="text-sm text-gray-600">
+        This is a Tailwind CSS Admin Panel by 123ApplePie.
+        <a href="#" class="text-blue-600 hover:text-blue-800 underline">Component details</a>
+      </p>
+    </div> -->
+  </div>
+</main>

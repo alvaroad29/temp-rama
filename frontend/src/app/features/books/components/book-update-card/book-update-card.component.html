@@ -1,0 +1,52 @@
+<article class="h-60 sm:h-55 md:h-50 w-90 sm:w-70 md:w-full rounded-lg overflow-hidden  transition-colors duration-200 bg-base-200">
+  <div class="flex flex-row h-full">
+    <!-- Imagen del libro -->
+
+      <a  class="w-30 h-full flex-shrink-0"
+        [routerLink]="['/library', book()?.id]"
+      >
+         <img [src]="book()?.imageUrl" [alt]="book()?.title"
+            class="w-full h-full object-cover"
+          >
+      </a>
+
+
+    <!-- Información del libro -->
+    <div class="flex flex-col justify-between p-4 w-full h-full">
+      <!-- Título -->
+       <a
+        [routerLink]="['/library', book()?.id]"
+      >
+        <h3 class="font-semibold text-sm mb-3 line-clamp-2 leading-tight hover:text-primary">
+          {{book()?.title}}
+        </h3>
+      </a>
+      <!-- Lista de capítulos recientes -->
+      <div>
+        @for (chapter of book()?.recentChapters; track chapter.id) {
+          <a
+            class="block bg-base-300 rounded-full hover:bg-base-content/10 transition-colors duration-100"
+            [routerLink]="['/library', book()?.id, chapter.id]"
+          >
+            <div class="flex items-center justify-between mt-1 p-1">
+              <!-- Nombre del capítulo -->
+              <div class="flex items-center">
+                <span class="text-xs truncate max-w-[100px] sm:max-w-[30px] md:max-w-[80px] lg:max-w-[60px] xl:max-w-[50px]">
+                  {{chapter.title}}
+                </span>
+              </div>
+
+              <!-- Fecha -->
+              <span class="text-xs text-base-content/80">
+                {{(chapter.publishDate| relativeTime | titlecase)}}
+              </span>
+            </div>
+          </a>
+
+        }
+      </div>
+    </div>
+  </div>
+</article>
+
+

@@ -1,0 +1,49 @@
+<!-- book-card.component.html -->
+@let c = card();
+@if (c) {
+  <a
+    class="block relative w-full h-full rounded-lg overflow-hidden shadow-lg cursor-pointer hover:brightness-75 focus:outline-none focus:ring-2 focus:ring-blue-500"
+    [routerLink]="['/library', c.id]"
+    [attr.aria-label]="'Ver detalles del libro: ' + c.title"
+  >
+    <!-- Imagen de fondo con fallback -->
+    <div
+      class="absolute inset-0 bg-cover bg-center bg-no-repeat"
+      [style.background-image]="'url(' + (c.image || 'https://via.placeholder.com/300x450?text=Sin+Portada') + ')'"
+      aria-hidden="true"
+    ></div>
+
+    <!-- Gradiente para mejorar legibilidad -->
+    <div class="absolute bottom-0 left-0 right-0 h-2/3 bg-gradient-to-t from-black/90 to-transparent"></div>
+
+    <!-- Contenido -->
+    <div class="relative h-full flex flex-col justify-between text-white p-2">
+      <!-- Contenedor superior: score (izquierda) y status (derecha) -->
+      <div class="absolute top-2 left-2 right-2 flex items-start justify-between z-10">
+        <!-- Score con ícono de estrella -->
+        <div class="bg-black/70 text-xs font-bold px-1.5 py-1 rounded-full flex items-center gap-1">
+          <i-lucide [img]="star" class="w-4 h-4 text-yellow-300 fill-yellow-400"></i-lucide>
+          <span>{{ c.score.toFixed(1) }}</span>
+        </div>
+
+        <!-- Status badge (derecha) -->
+        <span
+          class="text-white text-xs font-semibold px-2 py-1 rounded uppercase"
+          [class.bg-green-600]="c.status === 'Activo'"
+          [class.bg-red-600]="c.status === 'Completado'"
+          [class.bg-yellow-600]="c.status === 'Pausado'"
+          [class.bg-gray-600]="!['Activo', 'Completado', 'Pausado'].includes(c.status)"
+        >
+          {{ c.status }}
+        </span>
+      </div>
+
+      <!-- Título centrado abajo -->
+      <div class="mt-auto text-center px-2 pb-4">
+        <h3 class="text-xs sm:text-lg md:text-xl font-bold text-white line-clamp-2">
+          {{ c.title }}
+        </h3>
+      </div>
+    </div>
+  </a>
+}

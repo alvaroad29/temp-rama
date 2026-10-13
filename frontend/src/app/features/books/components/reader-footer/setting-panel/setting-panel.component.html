@@ -1,0 +1,105 @@
+<!-- Overlay -->
+<div
+  *ngIf="isOpen()"
+  class="fixed inset-0 z-40"
+  (click)="closeMenu()"
+></div>
+
+<!-- Menu deslizante -->
+<div class="fixed bottom-0 right-10 z-40 transform transition-transform duration-300 ease-out"
+ [class.translate-y-full]="!isOpen()"
+ [class.translate-y-0]="isOpen()"
+ [class.opacity-0]="!isOpen()"
+ [class.pointer-events-none]="!isOpen()">
+
+  <div class="w-60 mx-auto p-2 mb-16 bg-base-100 border border-base-300 rounded-lg shadow-lg">
+    <!-- Opciones de fuente -->
+    <div class="mb-2">
+      <h3 class="text-lg font-medium mb-4 text-base-content text-center">Fuente</h3>
+      <div class="grid grid-cols-2 gap-3 mb-4">
+        <button
+          *ngFor="let font of fonts"
+          (click)="selectFont(font)"
+          [class.bg-primary]="selectedFont() === font.value"
+          [class.bg-base-300]="selectedFont() !== font.value"
+          class="px-2 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-opacity-80"
+        >
+          {{ font.label }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Tamaño de texto -->
+    <div class="mb-2">
+      <h3 class="text-lg font-medium mb-2 text-center">Tamaño de texto</h3>
+      <div class="flex items-center gap-4 justify-center">
+        <button
+          (click)="decreaseTextSize()"
+          class="w-8 h-8 bg-base-300 font-extrabold rounded-lg flex items-center justify-center hover:bg-gray-500 transition-colors"
+        >
+          −
+        </button>
+        <span class="text-lg font-medium min-w-[3rem] text-center">{{ textSize() }}</span>
+        <button
+          (click)="increaseTextSize()"
+          class="w-8 h-8 bg-base-300 font-extrabold rounded-lg flex items-center justify-center hover:bg-gray-500 transition-colors"
+        >
+          +
+        </button>
+      </div>
+    </div>
+
+    <!-- Altura de línea -->
+    <div class="mb-2">
+      <h3 class="text-lg font-medium mb-2 text-center">Altura de línea</h3>
+      <div class="flex items-center gap-4 justify-center">
+        <button
+          (click)="decreaseLineHeight()"
+          class="w-8 h-8 bg-base-300 font-extrabold rounded-lg flex items-center justify-center hover:bg-gray-500 transition-colors"
+        >
+          −
+        </button>
+        <span class="text-lg font-medium min-w-[3rem] text-center">{{ lineHeight() }}</span>
+        <button
+          (click)="increaseLineHeight()"
+          class="w-8 h-8 bg-base-300 font-extrabold rounded-lg flex items-center justify-center hover:bg-gray-500 transition-colors"
+        >
+          +
+        </button>
+      </div>
+    </div>
+
+    <!-- Contraste -->
+    <div class="mb-6">
+      <h3 class="text-lg font-medium mb-4 text-center">Contraste</h3>
+      <div class="flex gap-3 justify-center">
+        <button
+          (click)="toggleContrast(true)"
+          [class.bg-primary]="highContrast()"
+          [class.bg-base-300]="!highContrast()"
+          class="px-4 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-opacity-80 flex items-center gap-2"
+        >
+          Alto
+        </button>
+        <button
+          (click)="toggleContrast(false)"
+          [class.bg-primary]="!highContrast()"
+          [class.bg-base-300]="highContrast()"
+          class="px-4 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-opacity-80 flex items-center gap-2"
+        >
+          Normal
+        </button>
+      </div>
+    </div>
+
+    <!-- Botón Reset -->
+    <div class="text-center">
+      <button
+        (click)="resetSettings()"
+        class="px-6 py-3 border border-primary rounded-lg font-medium hover:bg-primary transition-colors"
+      >
+        RESTABLECER
+      </button>
+    </div>
+  </div>
+</div>

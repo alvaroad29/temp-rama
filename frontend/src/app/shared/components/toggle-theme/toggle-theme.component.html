@@ -1,0 +1,8 @@
+<label class="swap swap-rotate hover:text-primary">
+  <!-- this hidden checkbox controls the state -->
+  <input type="checkbox" [(ngModel)]="isLigth" (change) = "themeService.toggleTheme()"/>
+
+ <!-- Icono de sol (modo claro) -->
+   <div class="swap-on"><i-lucide [name]="sun" class="h-6 w-6"></i-lucide></div>
+  <div class="swap-off"><i-lucide [name]="moon" class="h-6 w-6"></i-lucide></div>
+</label>

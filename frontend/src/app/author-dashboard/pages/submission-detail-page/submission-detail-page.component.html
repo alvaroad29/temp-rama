@@ -1,0 +1,402 @@
+<!-- submission-detail-page.component.html -->
+<div class="min-h-screen bg-base-100 py-6 px-4 sm:px-6 lg:px-8">
+  <div class="max-w-4xl mx-auto">
+
+    <!-- Header con navegación -->
+    <div class="mb-6">
+      <div class="flex items-center gap-2 text-sm text-base-content/60 mb-4">
+        <a (click)="navigateBack()" class="hover:text-primary transition-colors cursor-pointer">
+          <i-lucide [img]="arrowLeft"></i-lucide>
+          Volver a {{ isAdminContext ? 'Administración' : 'Mis Solicitudes' }}
+        </a>
+      </div>
+
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 class="text-3xl font-bold text-base-content">
+            {{ isAdminContext ? 'Revisar Solicitud' : 'Detalles de Solicitud' }}
+          </h1>
+          <p class="text-base-content/60 mt-2">
+            {{ isAdminContext ? 'Revisa y gestiona esta solicitud de publicación' : 'Revisa los detalles de tu solicitud de publicación' }}
+          </p>
+        </div>
+
+        <!-- Estado -->
+        @if (submissionResource.value()) {
+          <div [class]="getStatusBadgeClass(submissionResource.value()!.status)" class="text-lg">
+            {{ getStatusText(submissionResource.value()!.status) }}
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Estado: Cargando -->
+    @if (submissionResource.isLoading()) {
+      <div class="space-y-6">
+        <!-- Skeleton para información del libro -->
+        <div class="card bg-base-200 shadow-xl animate-pulse">
+          <div class="card-body">
+            <div class="flex flex-col md:flex-row gap-6">
+              <div class="w-40 h-60 bg-base-300 rounded-lg mx-auto md:mx-0"></div>
+              <div class="flex-1 space-y-4">
+                <div class="h-8 bg-base-300 rounded w-3/4"></div>
+                <div class="h-4 bg-base-300 rounded w-full"></div>
+                <div class="h-4 bg-base-300 rounded w-2/3"></div>
+                <div class="flex gap-4">
+                  <div class="h-6 bg-base-300 rounded w-20"></div>
+                  <div class="h-6 bg-base-300 rounded w-24"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Skeleton para contenido -->
+        <div class="card bg-base-200 shadow-xl animate-pulse">
+          <div class="card-body">
+            <div class="h-6 bg-base-300 rounded w-1/3 mb-4"></div>
+            <div class="space-y-2">
+              <div class="h-4 bg-base-300 rounded w-full"></div>
+              <div class="h-4 bg-base-300 rounded w-full"></div>
+              <div class="h-4 bg-base-300 rounded w-3/4"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Estado: Error -->
+    @if (submissionResource.error() && !submissionResource.isLoading()) {
+      <div class="alert alert-error shadow-lg">
+        <div>
+          <!-- <i class="fas fa-exclamation-triangle"></i> -->
+          <span>Error al cargar la solicitud. Intenta nuevamente.</span>
+        </div>
+        <div class="flex gap-2 mt-2">
+          <button class="btn btn-ghost btn-sm" (click)="submissionResource.reload()">
+            Reintentar
+          </button>
+          <button class="btn btn-secondary btn-sm" (click)="navigateBack()">
+            Volver a la lista
+          </button>
+        </div>
+      </div>
+    }
+
+    <!-- Estado: No encontrado -->
+    @if (!submissionResource.isLoading() && !submissionResource.error() && !submissionResource.value()) {
+      <div class="text-center py-12">
+        <div class="max-w-md mx-auto">
+          <i class="fas fa-search text-6xl text-base-content/20 mb-4"></i>
+          <h3 class="text-xl font-semibold mb-2">Solicitud no encontrada</h3>
+          <p class="text-base-content/60 mb-6">
+            La solicitud que buscas no existe o no tienes permisos para verla.
+          </p>
+          <button
+            (click)="navigateBack()"
+            class="btn btn-primary gap-2"
+          >
+            <i-lucide [img]="arrowLeft"></i-lucide>
+            Volver a {{ isAdminContext ? 'Administración' : 'Mis Solicitudes' }}
+          </button>
+        </div>
+      </div>
+    }
+
+    <!-- Estado: Con datos -->
+    @if (!submissionResource.isLoading() && !submissionResource.error() && submissionResource.value()) {
+      @let submission = submissionResource.value()!;
+
+      <div class="space-y-6">
+
+        <!-- Información del libro -->
+        <div class="card bg-base-200 shadow-xl">
+          <div class="card-body">
+            <div class="flex flex-col md:flex-row gap-6">
+
+              <!-- Portada -->
+              <div class="flex-shrink-0 mx-auto md:mx-0">
+                @if (submission.coverUrl) {
+                  <img
+                    [src]="submission.coverUrl"
+                    [alt]="submission.title"
+                    class="w-40 h-60 object-cover rounded-lg shadow-md"
+                  />
+                } @else {
+                  <img
+                    [src]="'./assets/image-placeholder.png'"
+                    [alt]="submission.title"
+                    class="w-32 h-48 object-cover rounded-lg shadow-md"
+                  />
+                }
+              </div>
+
+              <!-- Información principal -->
+              <div class="flex-1">
+                <h2 class="card-title text-2xl mb-4">{{ submission.title }}</h2>
+
+                <!-- Sinopsis -->
+                <div class="mb-6">
+                  <h3 class="font-semibold text-lg mb-2">Sinopsis</h3>
+                  <p class="text-base-content/80 leading-relaxed">
+                    {{ submission.synopsis || 'Esta solicitud no tiene descripción.' }}
+                  </p>
+                </div>
+
+                <!-- Información adicional -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                  <div class="flex items-center gap-3">
+                    <!-- <div class="w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center">
+                      <i class="fas fa-book-open text-primary text-sm"></i>
+                    </div> -->
+                    <div>
+                      <div class="font-semibold">Volumen</div>
+                      <div class="text-base-content/70">{{ submission.volumeTitle }}</div>
+                    </div>
+                  </div>
+
+                  <div class="flex items-center gap-3">
+                    <!-- <div class="w-8 h-8 bg-secondary/20 rounded-full flex items-center justify-center">
+                      <i class="fas fa-file-alt text-secondary text-sm"></i>
+                    </div> -->
+                    <div>
+                      <div class="font-semibold">Capítulo</div>
+                      <div class="text-base-content/70">{{ submission.chapterTitle }}</div>
+                    </div>
+                  </div>
+
+                  <div class="flex items-center gap-3">
+                    <!-- <div class="w-8 h-8 bg-accent/20 rounded-full flex items-center justify-center">
+                      <i class="fas fa-calendar text-accent text-sm"></i>
+                    </div> -->
+                    <div>
+                      <div class="font-semibold">Enviado</div>
+                      <div class="text-base-content/70">{{ formatDate(submission.createdAt) }}</div>
+                    </div>
+                  </div>
+
+                  <div class="flex items-center gap-3">
+                    <!-- <div class="w-8 h-8 bg-info/20 rounded-full flex items-center justify-center">
+                      <i class="fas fa-tags text-info text-sm"></i>
+                    </div> -->
+                    <div>
+                      <div class="font-semibold">Géneros</div>
+                      <div class="text-base-content/70">{{ submission.genreIds.length }} géneros seleccionados</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="mt-4 pt-4 border-t border-base-300">
+                  <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-3">
+                    <div>
+                      <h4 class="font-semibold text-base mb-1">Géneros seleccionados</h4>
+                    </div>
+
+                    <!-- Contador para móviles -->
+                    <div class="sm:hidden bg-primary/10 text-primary px-3 py-1 rounded-full text-sm font-medium">
+                      {{ submission.genreIds.length }} géneros
+                    </div>
+                  </div>
+
+                  <!-- Lista de géneros con diseño responsive -->
+                  <div class="genre-container">
+                    <div class="flex flex-wrap gap-2 max-h-32 overflow-y-auto py-1 px-1">
+                      @for (genre of submissionGenres(); track genre.id) {
+                        <span
+                          [class]="genre.isActive ?
+                                  'bg-primary text-primary-content border-primary' :
+                                  'bg-warning text-warning-content border-warning'"
+                          class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold border transition-all duration-200 hover:scale-105 min-w-0 flex-shrink-0"
+                        >
+                          <span class="truncate max-w-[120px]">{{ genre.name }}</span>
+                        </span>
+                      }
+                    </div>
+
+                    <!-- Mensaje cuando hay muchos géneros -->
+                    @if (submission.genreIds.length > 8) {
+                      <div class="mt-2 text-xs text-base-content/60 flex items-center gap-1">
+                        <!-- <i class="fas fa-info-circle"></i> -->
+                        <span>Desplázate para ver todos los géneros</span>
+                      </div>
+                    }
+
+                    <!-- Mensaje cuando no hay géneros -->
+                    @if (submission.genreIds.length === 0) {
+                      <div class="text-center py-4 text-base-content/40">
+                        <i class="fas fa-tags text-lg mb-1"></i>
+                        <p class="text-sm">No se seleccionaron géneros</p>
+                      </div>
+                    }
+                  </div>
+                </div>
+
+                <!-- Información del usuario (solo para admin) -->
+                @if (isAdminContext && submission.userName) {
+                  <div class="mt-4 pt-4 border-t border-base-300">
+                    <div class="flex items-center gap-2">
+                      <i class="fas fa-user text-base-content/50"></i>
+                      <span class="text-sm">
+                        <strong>Usuario:</strong> {{ submission.userName }}
+                      </span>
+                    </div>
+                  </div>
+                }
+
+                <!-- Última actualización -->
+                <div class="mt-6 pt-4 border-t border-base-300">
+                  <div class="text-sm text-base-content/60">
+                    Última actualización: {{ formatDate(submission.updatedAt) }}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Panel de acciones del ADMIN -->
+        @if (isAdminContext && canAdminEdit) {
+          <div class="card bg-base-200 shadow-xl">
+            <div class="card-body">
+              <h3 class="card-title text-lg mb-4">Acciones de Administración</h3>
+
+              <div class="space-y-4">
+                <div class="form-control">
+                  <label class="label">
+                    <span class="label-text font-semibold">Decisión</span>
+                  </label>
+                  <select
+                    class="select select-bordered w-full"
+                    [ngModel]="submissionDecision"
+                    (ngModelChange)="submissionDecision = $event"
+                  >
+                    <option [value]="null" disabled selected>Selecciona una decisión</option>
+                    <option [value]="BookSubmissionStatusEnum.Approved">Aprobar</option>
+                    <option [value]="BookSubmissionStatusEnum.Rejected">Rechazar</option>
+                    <option [value]="BookSubmissionStatusEnum.NeedsChanges">Solicitar Cambios</option>
+                  </select>
+                </div>
+
+                <div class="form-control">
+                  <label class="label">
+                    <span class="label-text font-semibold">Feedback para el autor</span>
+                  </label>
+                  <textarea
+                    class="textarea textarea-bordered w-full h-32"
+                    placeholder="Explica tu decisión al autor..."
+                    [ngModel]="submissionFeedback"
+                    (ngModelChange)="submissionFeedback = $event"
+                  ></textarea>
+                </div>
+
+                <div class="card-actions">
+                  <button
+                    class="btn btn-primary gap-2 flex-1"
+                    (click)="updateSubmissionStatus()"
+                    [disabled]="!submissionDecision || isUpdating()"
+                  >
+                    @if (isUpdating()) {
+                      <span class="loading loading-spinner loading-sm"></span>
+                      Procesando...
+                    } @else {
+                      <i class="fas fa-check"></i>
+                      Aplicar Decisión
+                    }
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- Feedback del administrador -->
+        @if (submission.adminFeedback && submission.status !== BookSubmissionStatusEnum.Pending) {
+          <div class="card bg-base-200 shadow-xl">
+            <div class="card-body">
+              <div class="flex items-center gap-3 mb-4">
+                <div class="w-10 h-10 bg-info/20 rounded-full flex items-center justify-center">
+                  <i class="fas fa-comment text-info"></i>
+                </div>
+                <div>
+                  <h3 class="card-title text-lg">Feedback del Administrador</h3>
+                  @if (submission.reviewedByAdminName) {
+                    <p class="text-sm text-base-content/60">
+                      Revisado por: {{ submission.reviewedByAdminName }} • {{ formatDate(submission.reviewedAt!) }}
+                    </p>
+                  }
+                </div>
+              </div>
+
+              <div class="bg-base-300 rounded-lg p-4">
+                <p class="text-base-content/80 leading-relaxed whitespace-pre-wrap">
+                  {{ submission.adminFeedback }}
+                </p>
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- Contenido del capítulo -->
+        <div class="card bg-base-200 shadow-xl">
+          <div class="card-body">
+            <div class="flex items-center gap-3 mb-4">
+              <div class="w-10 h-10 bg-success/20 rounded-full flex items-center justify-center">
+                <i class="fas fa-file-alt text-success"></i>
+              </div>
+              <div>
+                <h3 class="card-title text-lg">Contenido del Capítulo</h3>
+                <p class="text-sm text-base-content/60">
+                  {{ submission.chapterTitle }} • {{ submission.chapterContent.length }} caracteres
+                </p>
+              </div>
+            </div>
+
+            <!-- Vista del contenido markdown -->
+            <div class="bg-base-100 rounded-lg p-6 markdown-content">
+              <markdown [data]="submission.chapterContent"></markdown>
+
+              <!-- Mensaje si el contenido está vacío -->
+              @if (!submission.chapterContent.trim()) {
+                <div class="text-center py-8 text-base-content/40">
+                  <i class="fas fa-file-alt text-4xl mb-3"></i>
+                  <p>Este capítulo no tiene contenido.</p>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- Acciones comunes -->
+        <div class="card bg-base-200 shadow-xl">
+          <div class="card-body">
+            <h3 class="card-title text-lg mb-4">Acciones</h3>
+            <div class="flex flex-wrap gap-4">
+
+              <!-- Volver -->
+              <button
+                (click)="navigateBack()"
+                class="btn btn-secondary gap-2"
+              >
+                <i-lucide [img]="arrowLeft"></i-lucide>
+                <!-- <i class="fas fa-arrow-left"></i> -->
+                Volver a {{ isAdminContext ? 'la lista' : 'Mis Solicitudes' }}
+              </button>
+
+              <!-- Eliminar si está pendiente y es autor -->
+              @if (!isAdminContext && submission.status === BookSubmissionStatusEnum.Pending) {
+                <button
+                  class="btn btn-error gap-2"
+                  (click)="deleteSubmission(submission.id, submission.title)"
+                >
+                  <!-- <i class="fas fa-trash"></i> -->
+                  Cancelar Solicitud
+                </button>
+              }
+
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+</div>

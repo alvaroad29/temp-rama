@@ -1,0 +1,273 @@
+<!-- admin-books-page.component.html -->
+<div class="min-h-screen bg-base-100 py-6 px-4 sm:px-6 lg:px-8">
+  <div class="max-w-7xl mx-auto">
+
+    <!-- Header -->
+    <div class="mb-8">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 class="text-3xl font-bold text-base-content mb-2">Administrar Libros</h1>
+          <p class="text-base-content/60">
+            Gestiona todos los libros del sistema
+          </p>
+        </div>
+        <div class="flex gap-2">
+          <button
+            (click)="reloadData()"
+            class="btn btn-ghost gap-2"
+            [disabled]="booksResource.isLoading()"
+          >
+            <i class="fas fa-sync-alt" [class.animate-spin]="booksResource.isLoading()"></i>
+            Actualizar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Búsqueda -->
+    <div class="card bg-base-200 shadow-xl mb-6">
+      <div class="card-body">
+        <div class="flex flex-col sm:flex-row gap-4 items-center">
+          <div class="form-control flex-1">
+            <div class="relative">
+              <input
+                type="text"
+                placeholder="Buscar libros por título..."
+                class="input input-bordered w-full pl-10"
+                [value]="searchText()"
+                (input)="onSearch(($any($event.target).value))"
+              />
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <i class="fas fa-search text-base-content/40"></i>
+              </div>
+              @if (searchText()) {
+                <button
+                  (click)="clearSearch()"
+                  class="absolute inset-y-0 right-0 pr-3 flex items-center"
+                >
+                  <i class="fas fa-times text-base-content/40 hover:text-base-content/60"></i>
+                </button>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Estadísticas -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+      <div class="stat bg-base-200 rounded-lg">
+        <div class="stat-figure text-primary">
+          <i class="fas fa-book text-2xl"></i>
+        </div>
+        <div class="stat-title">Total de Libros</div>
+        <div class="stat-value text-primary text-2xl">{{ totalRecords() }}</div>
+      </div>
+
+      <div class="stat bg-base-200 rounded-lg">
+        <div class="stat-figure text-success">
+          <i class="fas fa-check-circle text-2xl"></i>
+        </div>
+        <div class="stat-title">Activos</div>
+        <div class="stat-value text-success text-2xl">
+          {{ activeBooksCount() }}
+        </div>
+      </div>
+
+      <div class="stat bg-base-200 rounded-lg">
+        <div class="stat-figure text-error">
+          <i class="fas fa-eye-slash text-2xl"></i>
+        </div>
+        <div class="stat-title">Inactivos</div>
+        <div class="stat-value text-error text-2xl">
+          {{ inactiveBooksCount() }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Estado: Cargando -->
+    @if (booksResource.isLoading()) {
+      <div class="space-y-4">
+        @for (i of [1,2,3,4,5]; track i) {
+          <div class="card bg-base-200 shadow-xl animate-pulse">
+            <div class="card-body">
+              <div class="flex gap-4">
+                <div class="w-20 h-28 bg-base-300 rounded-lg"></div>
+                <div class="flex-1 space-y-3">
+                  <div class="h-6 bg-base-300 rounded w-3/4"></div>
+                  <div class="h-4 bg-base-300 rounded w-full"></div>
+                  <div class="flex gap-2">
+                    <div class="h-6 bg-base-300 rounded w-20"></div>
+                    <div class="h-6 bg-base-300 rounded w-24"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Estado: Error -->
+    @if (booksResource.error() && !booksResource.isLoading()) {
+      <div class="alert alert-error shadow-lg">
+        <div>
+          <i class="fas fa-exclamation-triangle"></i>
+          <span>Error al cargar los libros. Intenta nuevamente.</span>
+        </div>
+        <button class="btn btn-ghost btn-sm" (click)="reloadData()">
+          Reintentar
+        </button>
+      </div>
+    }
+
+    <!-- Estado: Sin libros -->
+    @if (!booksResource.isLoading() && !booksResource.error() && books().length === 0) {
+      <div class="text-center py-12">
+        <div class="max-w-md mx-auto">
+          <i class="fas fa-book text-6xl text-base-content/20 mb-4"></i>
+          <h3 class="text-xl font-semibold mb-2">
+            {{ searchText() ? 'No se encontraron libros' : 'No hay libros' }}
+          </h3>
+          <p class="text-base-content/60">
+            {{ searchText() ? 'Intenta con otros términos de búsqueda' : 'No hay libros registrados en el sistema' }}
+          </p>
+        </div>
+      </div>
+    }
+
+    <!-- Estado: Con libros -->
+    @if (!booksResource.isLoading() && !booksResource.error() && books().length > 0) {
+      <div class="space-y-4">
+        @for (book of books(); track book.id) {
+          <div class="card bg-base-200 shadow-xl hover:shadow-2xl transition-shadow duration-300">
+            <div class="card-body">
+              <div class="flex flex-col md:flex-row gap-6">
+
+                <!-- Portada e información básica -->
+                <div class="flex flex-col sm:flex-row gap-6 flex-1">
+                  <!-- Portada -->
+                  <div class="flex-shrink-0 mx-auto md:mx-0">
+                    @if (book.imageUrl) {
+                      <img
+                        [src]="book.imageUrl"
+                        [alt]="book.title"
+                        class="w-20 h-28 object-cover rounded-lg shadow-md"
+                      />
+                    } @else {
+                      <div class="w-20 h-28 bg-base-300 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-book text-2xl text-base-content/30"></i>
+                      </div>
+                    }
+                  </div>
+
+                  <!-- Información del libro -->
+                  <div class="flex-1">
+                    <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
+                      <div class="flex-1">
+                        <h3 class="card-title text-lg mb-2">{{ book.title }}</h3>
+                        <p class="text-base-content/70 line-clamp-2 mb-3 text-sm">
+                          {{ book.description || 'Sin descripción' }}
+                        </p>
+
+                        <!-- Información del autor -->
+                        <div class="flex items-center gap-2 mb-2">
+                          <i class="fas fa-user text-base-content/50 text-sm"></i>
+                          <span class="text-sm">
+                            Por: <strong>{{ book.author.displayName }}</strong>
+                          </span>
+                        </div>
+                        <div>
+                          Estado de publicacion:  <span [class]="getStateBadgeClass(book.state)">
+                          {{ getStateText(book.state) }}
+                        </span>
+                        </div>
+
+                      </div>
+
+                      <!-- Estados -->
+                      <div class="flex flex-col gap-2 items-end">
+                        <div [class]="getActiveBadgeClass(book.isActive)">
+                          {{ book.isActive ? 'Activo' : 'Inactivo' }}
+                        </div>
+
+                      </div>
+                    </div>
+
+                    <!-- Detalles adicionales -->
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm mb-4">
+                      <!-- <div class="flex items-center gap-2">
+                        <i class="fas fa-star text-yellow-500"></i>
+                        <span>{{ book.score }} ({{ book.totalRatings }})</span>
+                      </div> -->
+                      <div class="flex items-center gap-2">
+                        <i class="fas fa-eye text-base-content/50"></i>
+                        <span>{{ book.viewCount }} vistas</span>
+                      </div>
+                      <div class="flex items-center gap-2">
+                        <i class="fas fa-file-alt text-base-content/50"></i>
+                        <span>{{ book.chapterCount }} capítulos</span>
+                      </div>
+                      <div class="flex items-center gap-2">
+                        <i class="fas fa-calendar text-base-content/50"></i>
+                        <span>{{ formatDate(book.creationDate) }}</span>
+                      </div>
+                    </div>
+
+                    <!-- Géneros -->
+                    <div class="flex flex-wrap gap-1 mb-4">
+                      @for (genre of book.genres; track genre.id) {
+                        <span class="badge badge-outline badge-sm">{{ genre.name }}</span>
+                      }
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Acciones -->
+                <div class="flex flex-col gap-2 md:w-48">
+                  <button
+                    class="btn btn-sm w-full gap-2"
+                    [class.btn-error]="book.isActive"
+                    [class.btn-success]="!book.isActive"
+                    (click)="deleteBook(book)"
+                    [disabled]="isUpdating() === book.id"
+                  >
+                    @if (isUpdating() === book.id) {
+                      <span class="loading loading-spinner loading-sm"></span>
+                    } @else {
+                      <i class="fas" [class.fa-eye-slash]="book.isActive" [class.fa-eye]="!book.isActive"></i>
+                    }
+                    {{ book.isActive ? 'Desactivar' : 'Activar' }}
+                  </button>
+
+                  <!-- Espacio para futuras acciones -->
+                  <!-- <button class="btn btn-ghost btn-sm w-full gap-2" disabled>
+                    <i class="fas fa-edit"></i>
+                    Editar (próximamente)
+                  </button> -->
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Paginación -->
+      @if (booksResource.value() && booksResource.value()!.totalPages > 1) {
+        <div class="mt-6 flex justify-center">
+          <div class="join">
+            @for (page of [].constructor(booksResource.value()!.totalPages); track $index) {
+              <button
+                class="join-item btn btn-sm"
+                [class.btn-active]="$index + 1 === paginationService.currentPage()"
+
+              >
+                {{ $index + 1 }}
+              </button>
+            }
+          </div>
+        </div>
+      }
+    }
+  </div>
+</div>

@@ -1,0 +1,29 @@
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+  @for (card of statsCards; track card.title) {
+    <div class="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-md transition-shadow duration-200">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-6xl font-bold text-gray-900">{{ card.value }}</h3>
+        <button class="text-gray-400 hover:text-gray-600">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path>
+          </svg>
+        </button>
+      </div>
+      <div class="flex items-center justify-between">
+        <span class="text-sm font-medium text-gray-600">{{ card.title }}</span>
+        @if (card.change) {
+          <span class="text-sm font-medium"
+                [class.text-green-600]="card.changeType === 'positive'"
+                [class.text-red-600]="card.changeType === 'negative'">
+            {{ card.change }}
+          </span>
+        }
+      </div>
+      <div class="mt-4">
+        <a href="#" class="text-sm font-medium text-red-600 hover:text-red-800">
+          {{ card.link }}
+        </a>
+      </div>
+    </div>
+  }
+</div>
